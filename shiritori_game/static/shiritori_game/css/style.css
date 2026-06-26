@@ -1,0 +1,617 @@
+:root {
+    --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+    --card-bg: rgba(255, 255, 255, 0.06);
+    --card-border: rgba(255, 255, 255, 0.1);
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --accent-blue: #38bdf8;
+    --accent-pink: #f43f5e;
+    --accent-purple: #8b5cf6;
+    --accent-gradient: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
+    --success-color: #10b981;
+    --error-color: #ef4444;
+    --font-sans: 'Outfit', 'Noto Sans JP', sans-serif;
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --shadow-neon: 0 0 20px rgba(139, 92, 246, 0.3);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-sans);
+    background: #090d16;
+    color: var(--text-primary);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    overflow-x: hidden;
+}
+
+/* アプリ全体コンテナ */
+.app-container {
+    width: 100%;
+    max-width: 800px;
+    padding: 2rem 1rem;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    z-index: 1;
+}
+
+/* 背景デコレーション (動くBlob) */
+.blob {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(100px);
+    z-index: -1;
+    opacity: 0.25;
+    animation: blob-float 20s infinite alternate;
+}
+
+.blob-1 {
+    width: 400px;
+    height: 400px;
+    background: var(--accent-purple);
+    top: -100px;
+    left: -100px;
+}
+
+.blob-2 {
+    width: 500px;
+    height: 500px;
+    background: var(--accent-blue);
+    bottom: -150px;
+    right: -100px;
+    animation-delay: -5s;
+}
+
+@keyframes blob-float {
+    0% {
+        transform: translate(0, 0) scale(1);
+    }
+    100% {
+        transform: translate(50px, 100px) scale(1.2);
+    }
+}
+
+/* ヘッダー */
+.app-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--card-border);
+}
+
+.header-logo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.logo-icon {
+    font-size: 2rem;
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 2px 8px rgba(236, 72, 153, 0.4));
+}
+
+.header-logo h1 {
+    font-size: 1.8rem;
+    font-weight: 800;
+    letter-spacing: 2px;
+}
+
+/* スコアボード */
+.score-board {
+    display: flex;
+    gap: 1rem;
+}
+
+.score-item {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    backdrop-filter: blur(12px);
+    padding: 0.5rem 1.25rem;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 80px;
+    transition: var(--transition-smooth);
+}
+
+.score-item:hover {
+    border-color: var(--accent-purple);
+    box-shadow: var(--shadow-neon);
+    transform: translateY(-2px);
+}
+
+.score-item .label {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.score-item .value {
+    font-size: 1.4rem;
+    font-weight: 800;
+    background: linear-gradient(to right, #fff, var(--text-secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+#combo-box .value {
+    background: linear-gradient(to right, #ff007f, #ff7f00);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* メインゲームエリア */
+.game-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    margin-bottom: 2.5rem;
+}
+
+/* グラスモーフィズムカード共通 */
+.game-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    backdrop-filter: blur(16px);
+    border-radius: 24px;
+    padding: 2.5rem;
+    text-align: center;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    transition: var(--transition-smooth);
+    position: relative;
+    overflow: hidden;
+}
+
+.loading-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 4rem;
+}
+
+/* スピナー */
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid var(--card-border);
+    border-top: 4px solid var(--accent-purple);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* お題カード */
+.question-card {
+    max-width: 320px;
+    margin: 0 auto;
+    padding: 1rem;
+    padding-top: 2.5rem; /* バッジが画像と重ならないように上部余白を確保 */
+    position: relative; /* 絶対配置の基準点をカードに固定 */
+}
+
+.card-badge {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    background: var(--accent-gradient);
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+.image-wrapper {
+    width: 100%;
+    aspect-ratio: 1.2 / 1;
+    border-radius: 16px;
+    overflow: hidden;
+    margin: 0.5rem 0;
+    border: 1px solid var(--card-border);
+    background: #000;
+    position: relative;
+}
+
+.image-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    transition: var(--transition-smooth);
+}
+
+.reading-hint {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(transparent, rgba(0,0,0,0.85));
+    padding: 1.5rem 0.5rem 0.75rem 0.5rem;
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: #fff;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+}
+
+.card-info {
+    margin-top: 1rem;
+}
+
+.last-letter-badge {
+    display: inline-block;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--card-border);
+    padding: 0.5rem 1.5rem;
+    border-radius: 12px;
+    font-size: 0.95rem;
+}
+
+.last-letter-badge strong {
+    font-size: 1.5rem;
+    color: var(--accent-pink);
+    margin-left: 0.25rem;
+}
+
+/* 選択肢画像エリア */
+.choices-section {
+    margin-top: 1rem;
+    max-width: 450px;
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.choices-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.choice-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    backdrop-filter: blur(12px);
+    border-radius: 18px;
+    padding: 0.75rem;
+    aspect-ratio: 1.3 / 1;
+    cursor: pointer;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: var(--transition-smooth);
+    position: relative;
+}
+
+.choice-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 15px rgba(56, 189, 248, 0.3);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.choice-card img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    border-radius: 10px;
+    pointer-events: none; /* 画像自体へのクリックイベントを回避 */
+}
+
+/* ライフ（ハート）表示 */
+.life-heart {
+    color: var(--accent-pink);
+    margin: 0 0.1rem;
+    filter: drop-shadow(0 0 4px rgba(244, 63, 94, 0.6));
+    display: inline-block;
+    transition: var(--transition-smooth);
+}
+
+.life-heart.lost {
+    color: rgba(255, 255, 255, 0.15) !important;
+    filter: none !important;
+    transform: scale(0.8);
+}
+
+.error-message {
+    color: var(--error-color);
+    font-size: 0.9rem;
+    margin-top: 1rem;
+    min-height: 20px;
+    font-weight: 500;
+    text-align: center;
+}
+
+/* お手つき時の揺れアニメーション */
+.shake {
+    animation: shake-anim 0.4s ease-in-out;
+}
+
+@keyframes shake-anim {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-8px); }
+    40%, 80% { transform: translateX(8px); }
+}
+
+
+/* ステータス画面 (ゲームオーバー/クリア) */
+.status-card {
+    max-width: 480px;
+    margin: 0 auto;
+    animation: scale-up 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes scale-up {
+    0% { transform: scale(0.9); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.status-icon {
+    font-size: 4rem;
+    margin-bottom: 1.5rem;
+}
+
+.status-icon.success {
+    color: #f59e0b;
+    filter: drop-shadow(0 0 15px rgba(245, 158, 11, 0.4));
+}
+
+.status-icon.error {
+    color: var(--error-color);
+    filter: drop-shadow(0 0 15px rgba(239, 68, 68, 0.4));
+}
+
+.status-card h2 {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.status-card p {
+    color: var(--text-secondary);
+    margin-bottom: 2rem;
+}
+
+.result-stats {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin-bottom: 2.5rem;
+}
+
+.result-stats .stat {
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-label {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.stat-value {
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: #fff;
+}
+
+.btn {
+    padding: 0.9rem 2.5rem;
+    border-radius: 14px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+    transition: var(--transition-smooth);
+}
+
+.btn-primary {
+    background: var(--accent-gradient);
+    color: white;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-neon);
+}
+
+/* 履歴セクション */
+.history-section {
+    margin-top: 2rem;
+    animation: fade-in 0.5s ease;
+}
+
+@keyframes fade-in {
+    0% { opacity: 0; transform: translateY(10px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+
+.section-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.history-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    max-height: 250px;
+    overflow-y: auto;
+    padding-right: 0.5rem;
+}
+
+/* カスタムスクロールバー */
+.history-timeline::-webkit-scrollbar {
+    width: 6px;
+}
+.history-timeline::-webkit-scrollbar-track {
+    background: rgba(255,255,255,0.02);
+    border-radius: 10px;
+}
+.history-timeline::-webkit-scrollbar-thumb {
+    background: var(--card-border);
+    border-radius: 10px;
+}
+
+.history-item {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    padding: 0.75rem 1rem;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: var(--transition-smooth);
+}
+
+.history-item:hover {
+    background: rgba(255,255,255,0.08);
+}
+
+.history-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.history-img-wrapper {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--card-border);
+    background: #000;
+}
+
+.history-img-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.history-word-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.history-kana {
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.history-right {
+    font-size: 0.8rem;
+    color: var(--accent-pink);
+    font-weight: 700;
+}
+
+/* フッター */
+.app-footer {
+    margin-top: auto;
+    padding-top: 2rem;
+    border-top: 1px solid var(--card-border);
+    text-align: center;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.admin-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    color: var(--accent-blue);
+    text-decoration: none;
+    margin-top: 0.5rem;
+    font-weight: 600;
+    transition: var(--transition-smooth);
+}
+
+.admin-link:hover {
+    color: #fff;
+    text-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
+}
+
+/* ユーティリティ */
+.hidden {
+    display: none !important;
+}
+
+/* レスポンス */
+@media (max-width: 600px) {
+    .app-header {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: flex-start;
+    }
+    .score-board {
+        width: 100%;
+        justify-content: space-between;
+    }
+    .game-card {
+        padding: 1.5rem;
+    }
+    .question-card {
+        padding-top: 2.5rem; /* スマホサイズでもバッジの重なりを防ぐ */
+    }
+}
+
+/* メニュー画面 */
+.menu-card {
+    max-width: 480px;
+    margin: 0 auto;
+    text-align: center;
+    padding: 2.5rem 2rem;
+    animation: scale-up 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.menu-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    width: 100%;
+    max-width: 300px;
+    margin: 2rem auto 0 auto;
+}
+
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--card-border);
+    color: #fff;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-2px);
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+}

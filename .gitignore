@@ -1,0 +1,29 @@
+# Pythonキャッシュ
+__pycache__/
+*.py[cod]
+*$py.class
+
+# 仮想環境
+.venv/
+venv/
+ENV/
+
+# Django関連 (ローカルデータベースやメディアファイルなど)
+db.sqlite3
+db.sqlite3-journal
+media/
+staticfiles/
+document/
+
+# 開発用の一時プロファイルやキャッシュ
+temp_profile/
+backups/
+
+# 環境変数・機密情報
+.env
+.env.local
+
+# OS一時ファイル
+.DS_Store
+Thumbs.db
+desktop.ini

@@ -1,0 +1,145 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="画像を使った直感的で美しいしりとりゲーム。登録された画像の読み仮名をつなげて遊ぼう！">
+    <title>画像しりとりゲーム | Shiritori Game</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Noto+Sans+JP:wght@300;400;700;900&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="{% static 'shiritori_game/css/style.css' %}">
+</head>
+<body>
+    <div id="app-container" class="app-container">
+        <!-- 背景の動的な光の装飾 -->
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        
+        <header class="app-header">
+            <div class="header-logo">
+                <i class="fa-solid fa-gamepad logo-icon"></i>
+                <h1>画 像 し り と り</h1>
+            </div>
+            <div class="score-board">
+                <div class="score-item" id="score-box">
+                    <span class="label">スコア</span>
+                    <span class="value" id="current-score">0</span>
+                </div>
+                <div class="score-item" id="combo-box">
+                    <span class="label">コンボ</span>
+                    <span class="value" id="current-combo">0</span>
+                </div>
+                <div class="score-item" id="life-box">
+                    <span class="label">ライフ</span>
+                    <span class="value" id="current-life">
+                        <i class="fa-solid fa-heart life-heart"></i>
+                        <i class="fa-solid fa-heart life-heart"></i>
+                        <i class="fa-solid fa-heart life-heart"></i>
+                    </span>
+                </div>
+            </div>
+        </header>
+
+        <main class="game-main">
+            <!-- トップメニュー画面 -->
+            <div id="game-menu" class="game-card menu-card">
+                <i class="fa-solid fa-gamepad status-icon" style="color: var(--accent-blue); filter: drop-shadow(0 0 15px rgba(56, 189, 248, 0.4)); margin-bottom: 1rem;"></i>
+                <h2>しりとりをはじめよう！</h2>
+                <p>画像をつなげてしりとりをするゲームです。つなぎ文字からはじまる画像を選んでね。</p>
+                <div class="menu-actions">
+                    <button id="start-game-btn" class="btn btn-primary"><i class="fa-solid fa-play"></i> ゲームを開始</button>
+                    <a href="/admin/" id="post-image-btn" target="_blank" class="btn btn-secondary"><i class="fa-solid fa-upload"></i> 画像を投稿する</a>
+                </div>
+            </div>
+
+            <!-- ゲーム開始前のローディングまたはデータ確認 -->
+            <div id="game-loading" class="game-card loading-card hidden">
+                <div class="spinner"></div>
+                <p>ゲームデータを読み込んでいます...</p>
+            </div>
+
+            <!-- 画像カードエリア -->
+            <div id="game-play-area" class="play-area hidden">
+                <div class="card-container">
+                    <div class="game-card question-card" id="question-card">
+                        <div class="card-badge">現在のお題</div>
+                        <div class="image-wrapper">
+                            <img id="current-image" src="" alt="お題の画像">
+                            <div class="reading-hint" id="current-reading">？？？</div>
+                        </div>
+                        <div class="card-info">
+                            <span class="last-letter-badge">つなぐ文字: <strong id="next-start-letter">-</strong></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 選択肢画像エリア -->
+                <div class="choices-section">
+                    <div class="section-title"><i class="fa-solid fa-square-poll-horizontal"></i> つながる画像を選んでね</div>
+                    <div id="choices-container" class="choices-container">
+                        <!-- JSで生成される -->
+                    </div>
+                    <div id="error-message" class="error-message"></div>
+                </div>
+            </div>
+
+            <!-- ゲームオーバー画面 -->
+            <div id="game-over-screen" class="game-card status-card hidden">
+                <i class="fa-solid fa-skull-crossbones status-icon error"></i>
+                <h2>ゲームオーバー</h2>
+                <p id="game-over-reason">「ん」で終わってしまいました！</p>
+                <div class="result-stats">
+                    <div class="stat">
+                        <span class="stat-label">最終スコア</span>
+                        <span class="stat-value" id="final-score">0</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">最大コンボ</span>
+                        <span class="stat-value" id="final-combo">0</span>
+                    </div>
+                </div>
+                <button id="restart-btn" class="btn btn-primary">もういちど遊ぶ</button>
+            </div>
+
+            <!-- ゲームクリア画面（すべてのカードを使い切った場合） -->
+            <div id="game-clear-screen" class="game-card status-card hidden">
+                <i class="fa-solid fa-trophy status-icon success"></i>
+                <h2>完全クリア！</h2>
+                <p>登録されているすべての画像を繋げました！素晴らしい！</p>
+                <div class="result-stats">
+                    <div class="stat">
+                        <span class="stat-label">最終スコア</span>
+                        <span class="stat-value" id="clear-score">0</span>
+                    </div>
+                </div>
+                <button id="clear-restart-btn" class="btn btn-primary">もういちど遊ぶ</button>
+            </div>
+        </main>
+
+        <!-- 履歴エリア -->
+        <section class="history-section hidden" id="history-section">
+            <h3 class="section-title"><i class="fa-solid fa-clock-rotate-left"></i> しりとり履歴</h3>
+            <div class="history-timeline" id="history-timeline">
+                <!-- JavaScriptで履歴が追加されます -->
+            </div>
+        </section>
+
+        <footer class="app-footer">
+            <p>&copy; 2026 画像しりとりゲーム <span id="app-version">v1.0.0</span> (<span id="last-updated">最終更新: 2026-06-25</span>). 管理画面から画像と読み仮名を追加できます。</p>
+            <a href="/admin/" class="admin-link" target="_blank"><i class="fa-solid fa-user-gear"></i> 管理画面へ</a>
+        </footer>
+    </div>
+
+    <!-- Script -->
+    <script src="{% static 'shiritori_game/js/game.js' %}"></script>
+</body>
+</html>
