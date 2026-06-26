@@ -64,5 +64,15 @@ class ImageReading(models.Model):
         unique_together = ('image', 'reading')
         ordering = ['created_at']
 
+    def clean(self):
+        super().clean()
+        if hasattr(self, 'image') and self.image:
+            existing_count = self.image.readings.exclude(pk=self.pk).count()
+            if existing_count >= 5:
+                from django.core.exceptions import ValidationError
+                raise ValidationError({
+                    'reading': '1枚の画像に紐付けられる読み方は最大5個までです。'
+                })
+
     def __str__(self):
         return f"{self.reading} (画像ID: {self.image.id})"

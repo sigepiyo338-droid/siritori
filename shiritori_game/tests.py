@@ -94,6 +94,64 @@ class AuthViewsTestCase(TestCase):
         saved_img2 = Image.open(game_image2.image.path)
         self.assertEqual(saved_img2.size, (300, 300))
 
+    def test_upload_readings_limit_ok(self):
+        self.client.login(username=self.username, password=self.password)
+        from PIL import Image
+        import io
+        img_file = io.BytesIO()
+        img = Image.new('RGB', (100, 100))
+        img.save(img_file, format='PNG')
+        img_file.name = 'test.png'
+        img_file.seek(0)
+        
+        response = self.client.post(reverse('shiritori_game:image_upload'), {
+            'image': img_file,
+            'reading': 'いち, に, さん, よん, ご'
+        })
+        self.assertRedirects(response, reverse('shiritori_game:game_index'))
+        
+        from .models import GameImage
+        game_image = GameImage.objects.last()
+        self.assertEqual(game_image.readings.count(), 5)
+
+    def test_upload_readings_limit_fail(self):
+        self.client.login(username=self.username, password=self.password)
+        from PIL import Image
+        import io
+        img_file = io.BytesIO()
+        img = Image.new('RGB', (100, 100))
+        img.save(img_file, format='PNG')
+        img_file.name = 'test.png'
+        img_file.seek(0)
+        
+        response = self.client.post(reverse('shiritori_game:image_upload'), {
+            'image': img_file,
+            'reading': 'いち, に, さん, よん, ご, ろく'
+        })
+        self.assertEqual(response.status_code, 200)
+        form = response.context['form']
+        self.assertTrue(form.errors)
+        self.assertIn('reading', form.errors)
+
+    def test_model_readings_limit_fail(self):
+        from .models import GameImage, ImageReading
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        from django.core.exceptions import ValidationError
+        
+        # Create GameImage
+        image_file = SimpleUploadedFile("test.png", b"file_content", content_type="image/png")
+        game_image = GameImage.objects.create(image=image_file)
+        
+        # Add 5 readings
+        for i in range(5):
+            ImageReading.objects.create(image=game_image, reading=f'よみ{i}')
+            
+        # Attempt to add a 6th reading
+        new_reading = ImageReading(image=game_image, reading='よみろく')
+        with self.assertRaises(ValidationError):
+            new_reading.full_clean()
+
+
 
 
 

@@ -53,12 +53,8 @@ def image_upload(request):
                 
             game_image.save()
             
-            # 読み方を保存
-            reading_text = form.cleaned_data['reading']
-            # カンマ「,」「，」や読点「、」で分割
-            import re
-            readings = [r.strip() for r in re.split(r'[,，、]', reading_text) if r.strip()]
-            
+            # 読み方を保存 (フォーム検証済みのリストを使用)
+            readings = form.cleaned_data['reading']
             for reading in readings:
                 ImageReading.objects.create(image=game_image, reading=reading)
                 
