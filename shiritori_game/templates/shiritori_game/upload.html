@@ -17,6 +17,9 @@
     
     <!-- Stylesheet -->
     <link rel="stylesheet" href="{% static 'shiritori_game/css/style.css' %}">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{% static 'img/sihankun_100t.png' %}">
 </head>
 <body>
     <div id="app-container" class="app-container" style="justify-content: center; min-height: 100vh;">
@@ -27,7 +30,7 @@
         <main class="game-main" style="margin-bottom: 0;">
             <div class="game-card menu-card" style="max-width: 500px; padding: 3rem 2rem;">
                 <div class="header-logo" style="justify-content: center; margin-bottom: 1.5rem;">
-                    <i class="fa-solid fa-gamepad logo-icon"></i>
+                    <img src="{% static 'img/sihankun_100t.png' %}" alt="しりとり師範くんロゴ" class="logo-icon-img">
                     <h1 style="font-size: 1.6rem; letter-spacing: 1px;">しりとり師範くん</h1>
                 </div>
                 

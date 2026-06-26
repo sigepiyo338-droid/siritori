@@ -17,6 +17,9 @@
     
     <!-- Stylesheet -->
     <link rel="stylesheet" href="{% static 'shiritori_game/css/style.css' %}">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{% static 'img/sihankun_100t.png' %}">
 </head>
 <body>
     <div id="app-container" class="app-container">
@@ -26,7 +29,7 @@
         
         <header class="app-header">
             <div class="header-logo">
-                <i class="fa-solid fa-gamepad logo-icon"></i>
+                <img src="{% static 'img/sihankun_100t.png' %}" alt="しりとり師範くんロゴ" class="logo-icon-img">
                 <div class="logo-text-group">
                     <h1>しりとり師範くん</h1>
                     <div class="user-status">

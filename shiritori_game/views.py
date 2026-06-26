@@ -18,6 +18,39 @@ def image_upload(request):
             # GameImageオブジェクトを作成（未承認状態）
             game_image = form.save(commit=False)
             game_image.is_approved = False
+            
+            # 画像処理 (中央正方形クロップ & 600px上限縮小)
+            uploaded_image = request.FILES.get('image')
+            if uploaded_image:
+                from PIL import Image
+                import io
+                from django.core.files.base import ContentFile
+                
+                img = Image.open(uploaded_image)
+                original_format = img.format if img.format else 'PNG'
+                width, height = img.size
+                
+                # 1. 正方形クロップ
+                if width != height:
+                    size = min(width, height)
+                    left = (width - size) // 2
+                    top = (height - size) // 2
+                    right = left + size
+                    bottom = top + size
+                    img = img.crop((left, top, right, bottom))
+                
+                # 2. 600px上限縮小
+                if img.size[0] > 600:
+                    img = img.resize((600, 600), Image.Resampling.LANCZOS)
+                
+                # メモリ上バッファへ保存
+                buffer = io.BytesIO()
+                img.save(buffer, format=original_format)
+                
+                # フィールド値を新しいバイナリで更新
+                filename = uploaded_image.name
+                game_image.image.save(filename, ContentFile(buffer.getvalue()), save=False)
+                
             game_image.save()
             
             # 読み方を保存

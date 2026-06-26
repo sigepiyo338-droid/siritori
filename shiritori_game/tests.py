@@ -51,4 +51,49 @@ class AuthViewsTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'shiritori_game/upload.html')
 
+    def test_image_upload_processing(self):
+        # Log in first
+        self.client.login(username=self.username, password=self.password)
+        
+        # 1. 600pxより大きい画像をテスト (1200 x 800 -> 800 x 800にクロップ -> 600 x 600に縮小)
+        from PIL import Image
+        import io
+        img_file1 = io.BytesIO()
+        img1 = Image.new('RGB', (1200, 800), color='blue')
+        img1.save(img_file1, format='PNG')
+        img_file1.name = 'test_image_large.png'
+        img_file1.seek(0)
+        
+        response1 = self.client.post(reverse('shiritori_game:image_upload'), {
+            'image': img_file1,
+            'reading': 'てすと'
+        })
+        self.assertRedirects(response1, reverse('shiritori_game:game_index'))
+        
+        from .models import GameImage
+        game_image1 = GameImage.objects.filter(readings__reading='てすと').last()
+        self.assertIsNotNone(game_image1)
+        saved_img1 = Image.open(game_image1.image.path)
+        self.assertEqual(saved_img1.size, (600, 600))
+
+        # 2. 600pxより小さい画像をテスト (400 x 300 -> 300 x 300にクロップ -> 縮小せずそのまま保存)
+        img_file2 = io.BytesIO()
+        img2 = Image.new('RGB', (400, 300), color='red')
+        img2.save(img_file2, format='PNG')
+        img_file2.name = 'test_image_small.png'
+        img_file2.seek(0)
+        
+        response2 = self.client.post(reverse('shiritori_game:image_upload'), {
+            'image': img_file2,
+            'reading': 'ちいさい'
+        })
+        self.assertRedirects(response2, reverse('shiritori_game:game_index'))
+        
+        game_image2 = GameImage.objects.filter(readings__reading='ちいさい').last()
+        self.assertIsNotNone(game_image2)
+        saved_img2 = Image.open(game_image2.image.path)
+        self.assertEqual(saved_img2.size, (300, 300))
+
+
+
 
