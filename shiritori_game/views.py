@@ -2,7 +2,40 @@ from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.contrib.auth import login as auth_login, logout as auth_logout
 from django.contrib.auth.forms import AuthenticationForm
-from .models import GameImage
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from .models import GameImage, ImageReading
+from .forms import ImageUploadForm
+
+@login_required(login_url='shiritori_game:login')
+def image_upload(request):
+    """
+    ユーザーが画像を新規投稿（アップロード）するビュー
+    """
+    if request.method == 'POST':
+        form = ImageUploadForm(request.POST, request.FILES)
+        if form.is_valid():
+            # GameImageオブジェクトを作成（未承認状態）
+            game_image = form.save(commit=False)
+            game_image.is_approved = False
+            game_image.save()
+            
+            # 読み方を保存
+            reading_text = form.cleaned_data['reading']
+            # カンマ「,」「，」や読点「、」で分割
+            import re
+            readings = [r.strip() for r in re.split(r'[,，、]', reading_text) if r.strip()]
+            
+            for reading in readings:
+                ImageReading.objects.create(image=game_image, reading=reading)
+                
+            messages.success(request, '画像を投稿しました！管理者が承認するまでゲーム内には表示されません。')
+            return redirect('shiritori_game:game_index')
+    else:
+        form = ImageUploadForm()
+        
+    return render(request, 'shiritori_game/upload.html', {'form': form})
+
 
 def game_index(request):
     """

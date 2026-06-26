@@ -61,6 +61,17 @@
         </header>
 
         <main class="game-main">
+            {% if messages %}
+                <div class="messages-container">
+                    {% for message in messages %}
+                        <div class="message-bubble {{ message.tags }}">
+                            <i class="fa-solid fa-circle-check"></i>
+                            <span>{{ message }}</span>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
             <!-- トップメニュー画面 -->
             <div id="game-menu" class="game-card menu-card">
                 <i class="fa-solid fa-gamepad status-icon" style="color: var(--accent-blue); filter: drop-shadow(0 0 15px rgba(56, 189, 248, 0.4)); margin-bottom: 1rem;"></i>
@@ -71,7 +82,7 @@
                     {% if not user.is_authenticated %}
                         <a href="{% url 'shiritori_game:login' %}" class="btn btn-secondary"><i class="fa-solid fa-right-to-bracket"></i> ログインする</a>
                     {% endif %}
-                    <a href="/admin/" id="post-image-btn" target="_blank" class="btn btn-secondary"><i class="fa-solid fa-upload"></i> 画像を投稿する</a>
+                    <a href="{% url 'shiritori_game:image_upload' %}" id="post-image-btn" class="btn btn-secondary"><i class="fa-solid fa-upload"></i> 画像を投稿する</a>
                 </div>
             </div>
 
@@ -159,7 +170,7 @@
         </section>
 
         <footer class="app-footer">
-            <p>&copy; 2026 しりとり師範くん <span id="app-version">v1.0.0</span> (<span id="last-updated">最終更新: 2026-06-25</span>).</p>
+            <p>&copy; 2026 しりとり師範くん <span id="app-version">v1.2.0</span> (<span id="last-updated">最終更新: 2026-06-26</span>).</p>
         </footer>
     </div>
 

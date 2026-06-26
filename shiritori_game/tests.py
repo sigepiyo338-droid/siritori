@@ -41,3 +41,14 @@ class AuthViewsTestCase(TestCase):
         # Check that user is logged out
         self.assertFalse(response.wsgi_request.user.is_authenticated)
 
+    def test_upload_page_requires_login(self):
+        response = self.client.get(reverse('shiritori_game:image_upload'))
+        self.assertRedirects(response, reverse('shiritori_game:login') + '?next=' + reverse('shiritori_game:image_upload'))
+
+    def test_upload_page_renders_when_logged_in(self):
+        self.client.login(username=self.username, password=self.password)
+        response = self.client.get(reverse('shiritori_game:image_upload'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'shiritori_game/upload.html')
+
+
