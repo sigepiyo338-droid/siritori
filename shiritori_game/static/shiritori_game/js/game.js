@@ -19,10 +19,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const finalScore = document.getElementById('final-score');
     const finalCombo = document.getElementById('final-combo');
     const restartBtn = document.getElementById('restart-btn');
+    const gameOverHomeBtn = document.getElementById('game-over-home-btn');
     
     const gameClearScreen = document.getElementById('game-clear-screen');
     const clearScore = document.getElementById('clear-score');
     const clearRestartBtn = document.getElementById('clear-restart-btn');
+    const gameClearHomeBtn = document.getElementById('game-clear-home-btn');
     
     const historySection = document.getElementById('history-section');
     const historyTimeline = document.getElementById('history-timeline');
@@ -30,6 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Menu screen elements
     const gameMenu = document.getElementById('game-menu');
     const startGameBtn = document.getElementById('start-game-btn');
+    const abortGameBtn = document.getElementById('abort-game-btn');
 
     // Game variables
     let allImages = [];         // APIから取得したすべての画像データ
@@ -329,6 +332,19 @@ document.addEventListener('DOMContentLoaded', () => {
     // ボタンイベント
     restartBtn.addEventListener('click', startGame);
     clearRestartBtn.addEventListener('click', startGame);
+    
+    // トップに戻る・中止機能
+    function returnToHome() {
+        gamePlayArea.classList.add('hidden');
+        gameOverScreen.classList.add('hidden');
+        gameClearScreen.classList.add('hidden');
+        historySection.classList.add('hidden');
+        gameMenu.classList.remove('hidden');
+    }
+    
+    abortGameBtn.addEventListener('click', returnToHome);
+    gameOverHomeBtn.addEventListener('click', returnToHome);
+    gameClearHomeBtn.addEventListener('click', returnToHome);
 
     // ゲーム開始ボタンのクリックイベント
     startGameBtn.addEventListener('click', () => {

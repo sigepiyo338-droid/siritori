@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="画像を使った直感的で美しいしりとりゲーム。登録された画像の読み仮名をつなげて遊ぼう！">
-    <title>画像しりとりゲーム | Shiritori Game</title>
+    <title>しりとり師範くん | Shiritori Game</title>
     
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -27,7 +27,18 @@
         <header class="app-header">
             <div class="header-logo">
                 <i class="fa-solid fa-gamepad logo-icon"></i>
-                <h1>画 像 し り と り</h1>
+                <div class="logo-text-group">
+                    <h1>しりとり師範くん</h1>
+                    <div class="user-status">
+                        {% if user.is_authenticated %}
+                            <span class="user-name"><i class="fa-solid fa-user"></i> {{ user.username }}さん</span>
+                            <span class="status-sep">|</span>
+                            <a href="{% url 'shiritori_game:logout' %}" class="auth-link"><i class="fa-solid fa-right-from-bracket"></i> ログアウト</a>
+                        {% else %}
+                            <a href="{% url 'shiritori_game:login' %}" class="auth-link"><i class="fa-solid fa-right-to-bracket"></i> ログイン</a>
+                        {% endif %}
+                    </div>
+                </div>
             </div>
             <div class="score-board">
                 <div class="score-item" id="score-box">
@@ -57,6 +68,9 @@
                 <p>画像をつなげてしりとりをするゲームです。つなぎ文字からはじまる画像を選んでね。</p>
                 <div class="menu-actions">
                     <button id="start-game-btn" class="btn btn-primary"><i class="fa-solid fa-play"></i> ゲームを開始</button>
+                    {% if not user.is_authenticated %}
+                        <a href="{% url 'shiritori_game:login' %}" class="btn btn-secondary"><i class="fa-solid fa-right-to-bracket"></i> ログインする</a>
+                    {% endif %}
                     <a href="/admin/" id="post-image-btn" target="_blank" class="btn btn-secondary"><i class="fa-solid fa-upload"></i> 画像を投稿する</a>
                 </div>
             </div>
@@ -89,6 +103,11 @@
                         <!-- JSで生成される -->
                     </div>
                     <div id="error-message" class="error-message"></div>
+                    
+                    <!-- 中止ボタン -->
+                    <div class="play-actions" style="margin-top: 1.5rem; text-align: center;">
+                        <button id="abort-game-btn" class="btn btn-secondary" style="width: 100%; max-width: 250px;"><i class="fa-solid fa-circle-xmark"></i> ゲームを中止する</button>
+                    </div>
                 </div>
             </div>
 
@@ -107,7 +126,10 @@
                         <span class="stat-value" id="final-combo">0</span>
                     </div>
                 </div>
-                <button id="restart-btn" class="btn btn-primary">もういちど遊ぶ</button>
+                <div class="status-actions" style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                    <button id="restart-btn" class="btn btn-primary">もういちど遊ぶ</button>
+                    <button id="game-over-home-btn" class="btn btn-secondary"><i class="fa-solid fa-house"></i> トップに戻る</button>
+                </div>
             </div>
 
             <!-- ゲームクリア画面（すべてのカードを使い切った場合） -->
@@ -121,7 +143,10 @@
                         <span class="stat-value" id="clear-score">0</span>
                     </div>
                 </div>
-                <button id="clear-restart-btn" class="btn btn-primary">もういちど遊ぶ</button>
+                <div class="status-actions" style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                    <button id="clear-restart-btn" class="btn btn-primary">もういちど遊ぶ</button>
+                    <button id="game-clear-home-btn" class="btn btn-secondary"><i class="fa-solid fa-house"></i> トップに戻る</button>
+                </div>
             </div>
         </main>
 
@@ -134,8 +159,7 @@
         </section>
 
         <footer class="app-footer">
-            <p>&copy; 2026 画像しりとりゲーム <span id="app-version">v1.0.0</span> (<span id="last-updated">最終更新: 2026-06-25</span>). 管理画面から画像と読み仮名を追加できます。</p>
-            <a href="/admin/" class="admin-link" target="_blank"><i class="fa-solid fa-user-gear"></i> 管理画面へ</a>
+            <p>&copy; 2026 しりとり師範くん <span id="app-version">v1.0.0</span> (<span id="last-updated">最終更新: 2026-06-25</span>).</p>
         </footer>
     </div>
 

@@ -258,7 +258,7 @@ def open_main_screen_in_app_mode(url: str) -> bool:
 
 def build_ui() -> tk.Tk:
     root = tk.Tk()
-    root.title("画像しりとりゲーム ローカル管理ツール")
+    root.title("しりとり師範くん ローカル管理ツール")
     root.geometry("820x450")
     root.resizable(True, True)
     root.minsize(820, 450)
@@ -470,9 +470,13 @@ def build_ui() -> tk.Tk:
 
         try:
             if app_server_process is None or app_server_process.poll() is not None:
+                creationflags = 0
+                if sys.platform == "win32":
+                    creationflags = subprocess.CREATE_NO_WINDOW
                 app_server_process = subprocess.Popen(
                     [python_executable, "manage.py", "runserver"],
                     cwd=str(PROJECT_DIR),
+                    creationflags=creationflags,
                 )
                 status_var.set("Django開発サーバーを起動しました。")
             else:
@@ -783,23 +787,8 @@ def build_ui() -> tk.Tk:
     tools_tab.columnconfigure(0, weight=1)
     notebook.add(tools_tab, text="外部ツール")
 
-    ttk.Label(tools_tab, text="・画像しりとりゲーム (ローカル環境)").grid(
-        row=0, column=0, sticky="w"
-    )
-    local_url_label = ttk.Label(
-        tools_tab,
-        text=f"　-　{LOCAL_APP_URL}",
-        foreground="#0066cc",
-        cursor="hand2",
-    )
-    local_url_label.grid(row=1, column=0, sticky="w", pady=(0, 8))
-    local_url_label.bind(
-        "<Button-1>",
-        lambda _event: webbrowser.open(LOCAL_APP_URL),
-    )
-
     ttk.Label(tools_tab, text="・Django管理画面 (ローカル環境)").grid(
-        row=2, column=0, sticky="w"
+        row=0, column=0, sticky="w"
     )
     admin_url_label = ttk.Label(
         tools_tab,
@@ -807,14 +796,14 @@ def build_ui() -> tk.Tk:
         foreground="#0066cc",
         cursor="hand2",
     )
-    admin_url_label.grid(row=3, column=0, sticky="w", pady=(0, 8))
+    admin_url_label.grid(row=1, column=0, sticky="w", pady=(0, 8))
     admin_url_label.bind(
         "<Button-1>",
         lambda _event: webbrowser.open(f"{LOCAL_APP_URL}admin/"),
     )
 
     ttk.Label(tools_tab, text="・PythonAnywhere Dashboard").grid(
-        row=4, column=0, sticky="w"
+        row=2, column=0, sticky="w"
     )
     pa_url = ttk.Label(
         tools_tab,
@@ -822,7 +811,7 @@ def build_ui() -> tk.Tk:
         foreground="#0066cc",
         cursor="hand2",
     )
-    pa_url.grid(row=5, column=0, sticky="w", pady=(0, 8))
+    pa_url.grid(row=3, column=0, sticky="w", pady=(0, 8))
     pa_url.bind(
         "<Button-1>",
         lambda _event: webbrowser.open("https://www.pythonanywhere.com/"),
