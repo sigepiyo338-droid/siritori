@@ -731,4 +731,86 @@ body {
     color: #991b1b;
 }
 
+/* 投稿画像一覧画面 */
+.my-images-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+    width: 100%;
+}
+
+.my-image-item {
+    background: rgba(255, 255, 255, 0.5);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    padding: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    position: relative;
+    backdrop-filter: blur(10px);
+    transition: var(--transition-smooth);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+}
+
+.my-image-item:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(192, 132, 252, 0.15);
+    border-color: rgba(192, 132, 252, 0.4);
+    background: rgba(255, 255, 255, 0.75);
+}
+
+.my-image-item img {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.my-image-info {
+    width: 100%;
+    text-align: center;
+}
+
+.my-image-readings {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin-bottom: 0.25rem;
+}
+
+.my-image-status {
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.status-approved {
+    color: #10b981;
+}
+
+.status-pending {
+    color: #6366f1;
+}
+
+.btn-delete {
+    background: rgba(248, 113, 113, 0.15);
+    border: 1px solid rgba(248, 113, 113, 0.3);
+    color: #b91c1c;
+    transition: var(--transition-smooth);
+}
+
+.btn-delete:hover {
+    background: rgba(248, 113, 113, 0.25);
+    border-color: rgba(248, 113, 113, 0.5);
+    transform: scale(1.03);
+}
+
+
 

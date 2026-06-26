@@ -8,5 +8,7 @@ urlpatterns = [
     path('login/', views.user_login, name='login'),
     path('logout/', views.user_logout, name='logout'),
     path('upload/', views.image_upload, name='image_upload'),
+    path('my-images/', views.my_images, name='my_images'),
+    path('my-images/delete/<int:image_id>/', views.delete_image, name='delete_image'),
     path('api/images/', views.image_list_api, name='image_list_api'),
 ]

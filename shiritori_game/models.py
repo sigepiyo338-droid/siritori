@@ -1,5 +1,6 @@
 from django.db import models
 from django.core.validators import RegexValidator
+from django.contrib.auth.models import User
 
 # ひらがな制限のバリデーター (長音「ー」も許容)
 hiragana_validator = RegexValidator(
@@ -9,6 +10,14 @@ hiragana_validator = RegexValidator(
 )
 
 class GameImage(models.Model):
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='uploaded_images',
+        verbose_name='投稿ユーザー'
+    )
     image = models.ImageField(
         upload_to='uploads/%Y/%m/%d/',
         verbose_name='画像ファイル'
@@ -31,6 +40,11 @@ class GameImage(models.Model):
         verbose_name = 'ゲーム画像'
         verbose_name_plural = 'ゲーム画像一覧'
         ordering = ['-created_at']
+
+    def delete(self, *args, **kwargs):
+        if self.image:
+            self.image.delete(save=False)
+        super().delete(*args, **kwargs)
 
     def __str__(self):
         return f"画像 ID: {self.id} ({self.image.name})"

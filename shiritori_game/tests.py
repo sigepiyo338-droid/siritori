@@ -1,6 +1,7 @@
 from django.test import TestCase
 from django.urls import reverse
 from django.contrib.auth.models import User
+import os
 
 class AuthViewsTestCase(TestCase):
     def setUp(self):
@@ -150,6 +151,86 @@ class AuthViewsTestCase(TestCase):
         new_reading = ImageReading(image=game_image, reading='よみろく')
         with self.assertRaises(ValidationError):
             new_reading.full_clean()
+
+    def test_image_upload_sets_user(self):
+        self.client.login(username=self.username, password=self.password)
+        from PIL import Image
+        import io
+        img_file = io.BytesIO()
+        img = Image.new('RGB', (100, 100))
+        img.save(img_file, format='PNG')
+        img_file.name = 'test_owner.png'
+        img_file.seek(0)
+        
+        response = self.client.post(reverse('shiritori_game:image_upload'), {
+            'image': img_file,
+            'reading': 'あるじ'
+        })
+        self.assertRedirects(response, reverse('shiritori_game:game_index'))
+        
+        from .models import GameImage
+        game_image = GameImage.objects.filter(readings__reading='あるじ').last()
+        self.assertIsNotNone(game_image)
+        self.assertEqual(game_image.user, self.user)
+
+    def test_my_images_view_requires_login(self):
+        response = self.client.get(reverse('shiritori_game:my_images'))
+        self.assertRedirects(response, reverse('shiritori_game:login') + '?next=' + reverse('shiritori_game:my_images'))
+
+    def test_my_images_view_renders_for_logged_in_user(self):
+        self.client.login(username=self.username, password=self.password)
+        response = self.client.get(reverse('shiritori_game:my_images'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'shiritori_game/my_images.html')
+
+    def test_delete_image_success(self):
+        import os
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        from .models import GameImage, ImageReading
+        
+        # Create an image uploaded by self.user
+        image_file = SimpleUploadedFile("test_delete.png", b"file_content", content_type="image/png")
+        game_image = GameImage.objects.create(user=self.user, image=image_file)
+        ImageReading.objects.create(image=game_image, reading='てすと')
+        
+        image_path = game_image.image.path
+        self.assertTrue(os.path.exists(image_path))
+        
+        self.client.login(username=self.username, password=self.password)
+        response = self.client.post(reverse('shiritori_game:delete_image', args=[game_image.id]))
+        self.assertRedirects(response, reverse('shiritori_game:my_images'))
+        
+        # Verify deletion from database
+        self.assertFalse(GameImage.objects.filter(pk=game_image.id).exists())
+        self.assertFalse(ImageReading.objects.filter(image=game_image).exists())
+        
+        # Verify physical file deletion
+        self.assertFalse(os.path.exists(image_path))
+
+    def test_delete_image_unauthorized(self):
+        from django.contrib.auth.models import User
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        from .models import GameImage, ImageReading
+        
+        # Create another user and an image they uploaded
+        other_user = User.objects.create_user(username='otheruser', password='password123')
+        image_file = SimpleUploadedFile("test_other.png", b"file_content", content_type="image/png")
+        game_image = GameImage.objects.create(user=other_user, image=image_file)
+        ImageReading.objects.create(image=game_image, reading='たにん')
+        
+        # Log in as self.user and try to delete other_user's image
+        self.client.login(username=self.username, password=self.password)
+        response = self.client.post(reverse('shiritori_game:delete_image', args=[game_image.id]))
+        self.assertRedirects(response, reverse('shiritori_game:my_images'))
+        
+        # Verify image is NOT deleted
+        self.assertTrue(GameImage.objects.filter(pk=game_image.id).exists())
+        self.assertTrue(ImageReading.objects.filter(image=game_image).exists())
+        
+        # Clean up other_user's physical file manually
+        if game_image.image and os.path.exists(game_image.image.path):
+            os.remove(game_image.image.path)
+
 
 
 

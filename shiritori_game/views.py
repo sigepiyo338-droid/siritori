@@ -18,6 +18,7 @@ def image_upload(request):
             # GameImageオブジェクトを作成（未承認状態）
             game_image = form.save(commit=False)
             game_image.is_approved = False
+            game_image.user = request.user
             
             # 画像処理 (中央正方形クロップ & 600px上限縮小)
             uploaded_image = request.FILES.get('image')
@@ -64,6 +65,39 @@ def image_upload(request):
         form = ImageUploadForm()
         
     return render(request, 'shiritori_game/upload.html', {'form': form})
+
+
+@login_required(login_url='shiritori_game:login')
+def my_images(request):
+    """
+    ログインユーザーが自身で投稿した画像の一覧を表示するビュー
+    """
+    images = GameImage.objects.filter(user=request.user).prefetch_related('readings')
+    return render(request, 'shiritori_game/my_images.html', {'images': images})
+
+
+@login_required(login_url='shiritori_game:login')
+def delete_image(request, image_id):
+    """
+    ログインユーザーが自身で投稿した画像を削除するビュー
+    """
+    from django.shortcuts import get_object_or_404
+    from django.views.decorators.http import require_POST
+    
+    if request.method != 'POST':
+        messages.error(request, '不正なリクエスト方法です。')
+        return redirect('shiritori_game:my_images')
+        
+    game_image = get_object_or_404(GameImage, pk=image_id)
+    
+    if game_image.user != request.user:
+        messages.error(request, '自分が投稿した画像以外は削除できません。')
+        return redirect('shiritori_game:my_images')
+        
+    game_image.delete()
+    messages.success(request, '画像を削除しました。')
+    return redirect('shiritori_game:my_images')
+
 
 
 def game_index(request):
