@@ -1,0 +1,138 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="しりとり師範くん 出題設定画面">
+    <title>出題設定 | しりとり師範くん</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Noto+Sans+JP:wght@300;400;700;900&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="{% static 'shiritori_game/css/style.css' %}">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{% static 'img/sihankun_100t.png' %}">
+</head>
+<body>
+    <div id="app-container" class="app-container" style="justify-content: center; min-height: 100vh;">
+        <!-- 背景の動的な光の装飾 -->
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        
+        <main class="game-main" style="margin-bottom: 0;">
+            <div class="game-card menu-card" style="max-width: 500px; padding: 3rem 2rem;">
+                <div class="header-logo" style="justify-content: center; margin-bottom: 1.5rem;">
+                    <img src="{% static 'img/sihankun_100t.png' %}" alt="しりとり師範くんロゴ" class="logo-icon-img">
+                    <h1 style="font-size: 1.6rem; letter-spacing: 1px;">しりとり師範くん</h1>
+                </div>
+                
+                <h2 style="font-size: 1.3rem; margin-bottom: 1rem; font-weight: 700; color: var(--text-primary);">
+                    出題設定
+                </h2>
+                <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 2rem; line-height: 1.6;">
+                    ゲームのライフや、出題されるしりとり画像の対象範囲を設定できます。設定はブラウザに自動保存されます。
+                </p>
+                
+                <form id="settings-form" style="text-align: left;">
+                    <!-- ライフ数設定 -->
+                    <div class="form-group" style="margin-bottom: 1.5rem;">
+                        <label style="display: block; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.75rem; font-weight: 600;">
+                            初期ライフ数
+                        </label>
+                        <div style="display: flex; gap: 1rem;">
+                            <label style="display: inline-flex; align-items: center; gap: 0.35rem; cursor: pointer; font-size: 0.95rem;">
+                                <input type="radio" name="max-lives" value="1"> 1 (一撃死)
+                            </label>
+                            <label style="display: inline-flex; align-items: center; gap: 0.35rem; cursor: pointer; font-size: 0.95rem;">
+                                <input type="radio" name="max-lives" value="3" checked> 3 (標準)
+                            </label>
+                            <label style="display: inline-flex; align-items: center; gap: 0.35rem; cursor: pointer; font-size: 0.95rem;">
+                                <input type="radio" name="max-lives" value="5"> 5
+                            </label>
+                            <label style="display: inline-flex; align-items: center; gap: 0.35rem; cursor: pointer; font-size: 0.95rem;">
+                                <input type="radio" name="max-lives" value="10"> 10
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- 出題対象設定 -->
+                    <div class="form-group" style="margin-bottom: 2rem;">
+                        <label style="display: block; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.75rem; font-weight: 600;">
+                            出題される画像の対象範囲
+                        </label>
+                        <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                            <label style="display: inline-flex; align-items: center; gap: 0.5rem; cursor: pointer; font-size: 0.95rem;">
+                                <input type="radio" name="filter-range" value="all" checked> すべての画像 (誰でも投稿したもの & 初期データ)
+                            </label>
+                            {% if user.is_authenticated %}
+                                <label style="display: inline-flex; align-items: center; gap: 0.5rem; cursor: pointer; font-size: 0.95rem;">
+                                    <input type="radio" name="filter-range" value="mine"> 自分が投稿した画像のみ
+                                </label>
+                            {% else %}
+                                <label style="display: inline-flex; align-items: center; gap: 0.5rem; color: var(--text-secondary); font-size: 0.95rem;" title="ログインすると選択可能になります。">
+                                    <input type="radio" name="filter-range" value="mine" disabled> 自分が投稿した画像のみ (要ログイン)
+                                </label>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                        <i class="fa-solid fa-floppy-disk"></i> 設定を保存する
+                    </button>
+                </form>
+                
+                <div id="save-success-msg" class="message-bubble success hidden" style="margin-top: 1.5rem; padding: 0.75rem 1rem; font-size: 0.85rem;">
+                    <i class="fa-solid fa-circle-check"></i>
+                    <span>設定を保存しました。</span>
+                </div>
+                
+                <div style="margin-top: 2rem; border-top: 1px solid var(--card-border); padding-top: 1.5rem; text-align: center;">
+                    <a href="{% url 'shiritori_game:game_index' %}" class="auth-link" style="font-size: 0.9rem; display: inline-flex; align-items: center; gap: 0.35rem;">
+                        <i class="fa-solid fa-arrow-left"></i> トップ画面に戻る
+                    </a>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('settings-form');
+            const successMsg = document.getElementById('save-success-msg');
+            
+            // 既存の設定を読み込んでフォームにセット
+            const currentLives = localStorage.getItem('shiritori_max_lives') || '3';
+            const currentRange = localStorage.getItem('shiritori_filter_only_my') === 'true' ? 'mine' : 'all';
+            
+            const livesInput = form.querySelector(`input[name="max-lives"][value="${currentLives}"]`);
+            if (livesInput) livesInput.checked = true;
+            
+            const rangeInput = form.querySelector(`input[name="filter-range"][value="${currentRange}"]`);
+            if (rangeInput && !rangeInput.disabled) rangeInput.checked = true;
+            
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                
+                const selectedLives = form.querySelector('input[name="max-lives"]:checked').value;
+                const selectedRange = form.querySelector('input[name="filter-range"]:checked').value;
+                
+                localStorage.setItem('shiritori_max_lives', selectedLives);
+                localStorage.setItem('shiritori_filter_only_my', selectedRange === 'mine' ? 'true' : 'false');
+                
+                successMsg.classList.remove('hidden');
+                setTimeout(() => {
+                    successMsg.classList.add('hidden');
+                }, 3000);
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,94 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="しりとり師範くん アカウント設定画面">
+    <title>アカウント設定 | しりとり師範くん</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Noto+Sans+JP:wght@300;400;700;900&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="{% static 'shiritori_game/css/style.css' %}">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{% static 'img/sihankun_100t.png' %}">
+</head>
+<body>
+    <div id="app-container" class="app-container" style="justify-content: center; min-height: 100vh;">
+        <!-- 背景の動的な光の装飾 -->
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        
+        <main class="game-main" style="margin-bottom: 0;">
+            {% if messages %}
+                <div class="messages-container" style="max-width: 500px; margin: 0 auto 1.5rem auto;">
+                    {% for message in messages %}
+                        <div class="message-bubble {{ message.tags }}">
+                            <i class="fa-solid fa-circle-check"></i>
+                            <span>{{ message }}</span>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <div class="game-card menu-card" style="max-width: 500px; padding: 3rem 2rem;">
+                <div class="header-logo" style="justify-content: center; margin-bottom: 1.5rem;">
+                    <img src="{% static 'img/sihankun_100t.png' %}" alt="しりとり師範くんロゴ" class="logo-icon-img">
+                    <h1 style="font-size: 1.6rem; letter-spacing: 1px;">しりとり師範くん</h1>
+                </div>
+                
+                <h2 style="font-size: 1.3rem; margin-bottom: 1rem; font-weight: 700; color: var(--text-primary);">
+                    アカウント設定
+                </h2>
+                <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 2rem; line-height: 1.6;">
+                    あなたのアカウント情報の確認および編集を行うことができます。
+                </p>
+                
+                <div style="text-align: left; background: rgba(255, 255, 255, 0.4); border: 1px solid var(--card-border); padding: 1.25rem; border-radius: 14px; margin-bottom: 2rem;">
+                    <div style="margin-bottom: 0.75rem;">
+                        <span style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600;">ユーザー名:</span>
+                        <div style="font-size: 1.1rem; font-weight: 700; color: var(--text-primary); margin-top: 0.25rem;">
+                            <i class="fa-solid fa-user" style="color: var(--accent-purple); margin-right: 0.35rem;"></i> {{ user.username }}
+                        </div>
+                    </div>
+                    <div>
+                        <span style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600;">登録日:</span>
+                        <div style="font-size: 0.95rem; color: var(--text-primary); margin-top: 0.25rem;">
+                            <i class="fa-solid fa-calendar-day" style="color: var(--accent-blue); margin-right: 0.35rem;"></i> {{ user.date_joined|date:"Y年m月d日 H:i" }}
+                        </div>
+                    </div>
+                </div>
+
+                <form method="post" action="{% url 'shiritori_game:account_settings' %}" style="text-align: left;">
+                    {% csrf_token %}
+                    
+                    <div class="form-group" style="margin-bottom: 1.5rem;">
+                        <label for="email" style="display: block; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.5rem; font-weight: 600;">
+                            メールアドレス
+                        </label>
+                        <input type="email" id="email" name="email" value="{{ user.email }}" placeholder="example@email.com" style="width: 100%; padding: 0.9rem 1.25rem; background: rgba(255, 255, 255, 0.6); border: 1px solid var(--card-border); border-radius: 12px; color: var(--text-primary); font-size: 1rem;">
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                        <i class="fa-solid fa-floppy-disk"></i> メールアドレスを保存
+                    </button>
+                </form>
+                
+                <div style="margin-top: 2rem; border-top: 1px solid var(--card-border); padding-top: 1.5rem; text-align: center;">
+                    <a href="{% url 'shiritori_game:game_index' %}" class="auth-link" style="font-size: 0.9rem; display: inline-flex; align-items: center; gap: 0.35rem;">
+                        <i class="fa-solid fa-arrow-left"></i> トップ画面に戻る
+                    </a>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

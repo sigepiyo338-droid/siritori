@@ -144,7 +144,39 @@ def image_list_api(request):
             data.append({
                 'id': img.id,
                 'image_url': img.image.url,
-                'readings': [r.reading for r in img.readings.all()]
+                'readings': [r.reading for r in img.readings.all()],
+                'user_id': img.user_id,
             })
             
     return JsonResponse(data, safe=False, json_dumps_params={'ensure_ascii': False})
+
+
+def game_settings(request):
+    """
+    出題設定画面を表示するビュー
+    """
+    return render(request, 'shiritori_game/settings.html')
+
+
+@login_required(login_url='shiritori_game:login')
+def post_management(request):
+    """
+    投稿管理画面を表示するビュー
+    """
+    return render(request, 'shiritori_game/management.html')
+
+
+@login_required(login_url='shiritori_game:login')
+def account_settings(request):
+    """
+    アカウント設定画面を表示し、メールアドレスの変更を処理するビュー
+    """
+    user = request.user
+    if request.method == 'POST':
+        email = request.POST.get('email', '').strip()
+        user.email = email
+        user.save()
+        messages.success(request, 'メールアドレスを更新しました。')
+        return redirect('shiritori_game:account_settings')
+        
+    return render(request, 'shiritori_game/account.html')

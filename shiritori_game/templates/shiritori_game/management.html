@@ -1,0 +1,67 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="しりとり師範くん 投稿管理画面">
+    <title>投稿管理 | しりとり師範くん</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Noto+Sans+JP:wght@300;400;700;900&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="{% static 'shiritori_game/css/style.css' %}">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{% static 'img/sihankun_100t.png' %}">
+</head>
+<body>
+    <div id="app-container" class="app-container" style="justify-content: center; min-height: 100vh;">
+        <!-- 背景の動的な光の装飾 -->
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        
+        <main class="game-main" style="margin-bottom: 0;">
+            <div class="game-card menu-card" style="max-width: 500px; padding: 3rem 2rem;">
+                <div class="header-logo" style="justify-content: center; margin-bottom: 1.5rem;">
+                    <img src="{% static 'img/sihankun_100t.png' %}" alt="しりとり師範くんロゴ" class="logo-icon-img">
+                    <h1 style="font-size: 1.6rem; letter-spacing: 1px;">しりとり師範くん</h1>
+                </div>
+                
+                <h2 style="font-size: 1.3rem; margin-bottom: 1rem; font-weight: 700; color: var(--text-primary);">
+                    投稿管理
+                </h2>
+                <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 2.5rem; line-height: 1.6;">
+                    しりとり用画像の新規投稿や、ご自身が投稿した画像の一覧確認・削除を行うことができます。
+                </p>
+                
+                <div class="menu-actions" style="margin-top: 0; margin-bottom: 2rem; max-width: 100%;">
+                    <a href="{% url 'shiritori_game:image_upload' %}" class="btn btn-secondary" style="padding: 1.25rem; font-size: 1.05rem; display: flex; flex-direction: column; gap: 0.5rem; border-radius: 16px;">
+                        <i class="fa-solid fa-upload" style="font-size: 1.8rem; color: var(--accent-purple);"></i>
+                        <span style="font-weight: 700;">画像を投稿する</span>
+                        <span style="font-size: 0.75rem; color: var(--text-secondary); font-weight: 400;">しりとりに使う画像を新しくアップロードします</span>
+                    </a>
+                    
+                    <a href="{% url 'shiritori_game:my_images' %}" class="btn btn-secondary" style="padding: 1.25rem; font-size: 1.05rem; display: flex; flex-direction: column; gap: 0.5rem; border-radius: 16px; margin-top: 1rem;">
+                        <i class="fa-solid fa-images" style="font-size: 1.8rem; color: var(--accent-blue);"></i>
+                        <span style="font-weight: 700;">投稿した画像の一覧</span>
+                        <span style="font-size: 0.75rem; color: var(--text-secondary); font-weight: 400;">自分が投稿した画像の一覧・承認状態の確認・削除ができます</span>
+                    </a>
+                </div>
+                
+                <div style="margin-top: 2rem; border-top: 1px solid var(--card-border); padding-top: 1.5rem; text-align: center;">
+                    <a href="{% url 'shiritori_game:game_index' %}" class="auth-link" style="font-size: 0.9rem; display: inline-flex; align-items: center; gap: 0.35rem;">
+                        <i class="fa-solid fa-arrow-left"></i> トップ画面に戻る
+                    </a>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

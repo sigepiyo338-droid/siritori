@@ -43,7 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let combo = 0;
     let maxCombo = 0;
     let lives = 3;
-    const maxLives = 3;
+    let maxLives = 3;
     let correctChoice = null;   // 次の正解となる画像データ
     let correctReading = '';    // 正解の読み方
 
@@ -89,6 +89,13 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             allImages = await response.json();
             
+            // 設定に従ってユーザー自身の画像のみにフィルタリング
+            const filterOnlyMy = localStorage.getItem('shiritori_filter_only_my') === 'true';
+            if (filterOnlyMy && window.SHIRITORI_USER_ID) {
+                const currentUserId = parseInt(window.SHIRITORI_USER_ID, 10);
+                allImages = allImages.filter(img => img.user_id === currentUserId);
+            }
+            
             // 画像の差し替え（キャッシュ）対策としてURLにキャッシュバスターを付与
             const cacheBuster = Date.now();
             allImages.forEach(img => {
@@ -98,7 +105,11 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             
             if (allImages.length === 0) {
-                showError('ゲーム用の承認済み画像が登録されていません。管理画面から画像を登録し、is_approvedをTrueにしてください。');
+                if (filterOnlyMy && window.SHIRITORI_USER_ID) {
+                    showError('あなたが投稿した承認済みの画像が登録されていません。画像を投稿するか、出題設定ですべての画像を出題対象に設定してください。');
+                } else {
+                    showError('ゲーム用の承認済み画像が登録されていません。管理画面から画像を登録し、is_approvedをTrueにしてください。');
+                }
                 return;
             }
             
@@ -131,7 +142,11 @@ document.addEventListener('DOMContentLoaded', () => {
         score = 0;
         combo = 0;
         maxCombo = 0;
-        lives = 3;
+        
+        // ローカルストレージからライフ数を読み込む
+        maxLives = parseInt(localStorage.getItem('shiritori_max_lives') || '3', 10);
+        lives = maxLives;
+        
         usedImageIds.clear();
         historyTimeline.innerHTML = '';
         

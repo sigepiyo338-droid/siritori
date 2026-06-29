@@ -231,6 +231,43 @@ class AuthViewsTestCase(TestCase):
         if game_image.image and os.path.exists(game_image.image.path):
             os.remove(game_image.image.path)
 
+    def test_game_settings_renders_for_anyone(self):
+        response = self.client.get(reverse('shiritori_game:game_settings'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'shiritori_game/settings.html')
+
+    def test_post_management_requires_login(self):
+        response = self.client.get(reverse('shiritori_game:post_management'))
+        self.assertRedirects(response, reverse('shiritori_game:login') + '?next=' + reverse('shiritori_game:post_management'))
+
+    def test_post_management_renders_when_logged_in(self):
+        self.client.login(username=self.username, password=self.password)
+        response = self.client.get(reverse('shiritori_game:post_management'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'shiritori_game/management.html')
+
+    def test_account_settings_requires_login(self):
+        response = self.client.get(reverse('shiritori_game:account_settings'))
+        self.assertRedirects(response, reverse('shiritori_game:login') + '?next=' + reverse('shiritori_game:account_settings'))
+
+    def test_account_settings_renders_when_logged_in(self):
+        self.client.login(username=self.username, password=self.password)
+        response = self.client.get(reverse('shiritori_game:account_settings'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'shiritori_game/account.html')
+
+    def test_account_settings_update_email(self):
+        self.client.login(username=self.username, password=self.password)
+        new_email = 'new_sigepiyo@example.com'
+        response = self.client.post(reverse('shiritori_game:account_settings'), {
+            'email': new_email
+        })
+        self.assertRedirects(response, reverse('shiritori_game:account_settings'))
+        
+        # Verify email updated in database
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.email, new_email)
+
 
 
 
