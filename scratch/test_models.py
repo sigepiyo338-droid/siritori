@@ -9,7 +9,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "siritori_project.settings")
 django.setup()
 
-from twotakukun_web.models import Question, Personality, Answer, Score
+from nitaku_app.models import Question, Personality, Answer, Score
 
 def test_query():
     print("Testing Django ORM queries on twotakukun_web models...")

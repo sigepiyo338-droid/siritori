@@ -1,6 +1,40 @@
 from django import forms
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.models import User
 from .models import GameImage, ImageReading
 from .models import hiragana_validator
+
+
+class UserRegistrationForm(UserCreationForm):
+    """新規ユーザー登録フォーム"""
+    email = forms.EmailField(
+        required=False,
+        label='メールアドレス（任意）',
+        widget=forms.EmailInput(attrs={
+            'placeholder': 'example@email.com',
+            'autocomplete': 'email',
+        })
+    )
+
+    class Meta:
+        model = User
+        fields = ['username', 'email', 'password1', 'password2']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # ウィジェット属性をカスタマイズ
+        self.fields['username'].widget.attrs.update({
+            'placeholder': '半角英数字・@/./+/-/_ のみ使用可',
+            'autocomplete': 'username',
+        })
+        self.fields['password1'].widget.attrs.update({
+            'placeholder': '8文字以上のパスワード',
+            'autocomplete': 'new-password',
+        })
+        self.fields['password2'].widget.attrs.update({
+            'placeholder': 'パスワードをもう一度入力',
+            'autocomplete': 'new-password',
+        })
 
 class ImageUploadForm(forms.ModelForm):
     reading = forms.CharField(

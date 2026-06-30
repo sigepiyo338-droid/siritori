@@ -71,9 +71,15 @@
                 </form>
                 
                 <div style="margin-top: 2rem; border-top: 1px solid var(--card-border); padding-top: 1.5rem; text-align: center;">
-                    <a href="{% url 'shiritori_game:game_index' %}" class="auth-link" style="font-size: 0.9rem; display: inline-flex; align-items: center; gap: 0.35rem;">
-                        <i class="fa-solid fa-arrow-left"></i> トップ画面に戻る
+                    <p style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 1rem;">アカウントをお持ちでない方</p>
+                    <a href="{% url 'shiritori_game:register' %}" class="btn" style="display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; background: rgba(255,255,255,0.08); border: 1px solid var(--card-border); color: var(--text-primary); text-decoration: none; padding: 0.65rem 1.5rem; border-radius: 12px; font-weight: 600; font-size: 0.9rem; transition: all 0.2s ease; width: 100%;">
+                        <i class="fa-solid fa-user-plus"></i> 新規アカウント登録
                     </a>
+                    <div style="margin-top: 1.25rem;">
+                        <a href="{% url 'shiritori_game:game_index' %}" class="auth-link" style="font-size: 0.9rem; display: inline-flex; align-items: center; gap: 0.35rem;">
+                            <i class="fa-solid fa-arrow-left"></i> トップ画面に戻る
+                        </a>
+                    </div>
                 </div>
             </div>
         </main>

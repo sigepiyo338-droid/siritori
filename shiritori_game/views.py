@@ -5,7 +5,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .models import GameImage, ImageReading
-from .forms import ImageUploadForm
+from .forms import ImageUploadForm, UserRegistrationForm
 
 @login_required(login_url='shiritori_game:login')
 def image_upload(request):
@@ -105,6 +105,27 @@ def game_index(request):
     ゲーム本体のHTMLページを表示するビュー
     """
     return render(request, 'shiritori_game/index.html')
+
+def user_register(request):
+    """
+    新規ユーザー登録画面の表示と処理を行うビュー
+    """
+    if request.user.is_authenticated:
+        return redirect('shiritori_game:game_index')
+
+    if request.method == 'POST':
+        form = UserRegistrationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            # 登録後、自動でログインする
+            auth_login(request, user)
+            messages.success(request, f'ようこそ、{user.username}さん！アカウントが作成されました。')
+            return redirect('shiritori_game:game_index')
+    else:
+        form = UserRegistrationForm()
+
+    return render(request, 'shiritori_game/register.html', {'form': form})
+
 
 def user_login(request):
     """
