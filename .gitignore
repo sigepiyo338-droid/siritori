@@ -27,3 +27,6 @@ backups/
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# 究極二択くんを管理対象外にする
+nitaku_app/

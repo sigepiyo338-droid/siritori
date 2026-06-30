@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'shiritori_game',
+    'twotakukun_web',
 ]
 
 MIDDLEWARE = [
