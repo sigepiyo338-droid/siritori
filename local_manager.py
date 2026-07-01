@@ -452,25 +452,19 @@ def build_ui() -> tk.Tk:
     nitaku_tab = ttk.Frame(notebook, style="Manager.TFrame", padding=12)
     notebook.add(nitaku_tab, text="二択くん管理")
     nitaku_tab.columnconfigure(0, weight=1)
-    nitaku_tab.rowconfigure(0, weight=1)
 
-    nitaku_notebook = ttk.Notebook(nitaku_tab, style="Manager.TNotebook")
-    nitaku_notebook.grid(row=0, column=0, sticky="nsew")
+    # ---- 二択くん: バージョン管理 (直配置) ----
+    nitaku_tab.columnconfigure(1, weight=1)
 
-    # ---- 二択くん: バージョン管理 ----
-    nitaku_version_tab = ttk.Frame(nitaku_notebook, style="Manager.TFrame", padding=12)
-    nitaku_version_tab.columnconfigure(1, weight=1)
-    nitaku_notebook.add(nitaku_version_tab, text="バージョン管理")
-
-    ttk.Label(nitaku_version_tab, text="アプリ情報収集（index.html）").grid(
+    ttk.Label(nitaku_tab, text="アプリ情報収集（index.html）").grid(
         row=0, column=0, columnspan=2, sticky="w", pady=(0, 8)
     )
-    ttk.Label(nitaku_version_tab, text=f"対象: {NITAKU_INDEX_PATH}").grid(
+    ttk.Label(nitaku_tab, text=f"対象: {NITAKU_INDEX_PATH}").grid(
         row=1, column=0, columnspan=2, sticky="w", pady=(0, 12)
     )
-    ttk.Label(nitaku_version_tab, text="バージョン").grid(row=2, column=0, sticky="w")
+    ttk.Label(nitaku_tab, text="バージョン").grid(row=2, column=0, sticky="w")
     
-    nitaku_version_frame = ttk.Frame(nitaku_version_tab, style="Manager.TFrame")
+    nitaku_version_frame = ttk.Frame(nitaku_tab, style="Manager.TFrame")
     nitaku_version_frame.grid(row=2, column=1, sticky="w", padx=(8, 0), pady=(0, 8))
 
     n_prefix_combo = ttk.Combobox(nitaku_version_frame, textvariable=nitaku_prefix_var, values=["v", ""], width=3)
@@ -489,14 +483,14 @@ def build_ui() -> tk.Tk:
     n_patch_spin = ttk.Spinbox(nitaku_version_frame, from_=0, to=99, width=4, textvariable=nitaku_patch_var)
     n_patch_spin.pack(side="left")
 
-    ttk.Label(nitaku_version_tab, text="最終更新日").grid(row=3, column=0, sticky="w")
-    nitaku_updated_entry = ttk.Entry(nitaku_version_tab, textvariable=nitaku_updated_var)
+    ttk.Label(nitaku_tab, text="最終更新日").grid(row=3, column=0, sticky="w")
+    nitaku_updated_entry = ttk.Entry(nitaku_tab, textvariable=nitaku_updated_var)
     nitaku_updated_entry.grid(row=3, column=1, sticky="ew", padx=(8, 0), pady=(0, 8))
 
     def set_nitaku_today() -> None:
         nitaku_updated_var.set(datetime.now().strftime("%Y-%m-%d"))
 
-    ttk.Button(nitaku_version_tab, text="本日の日付にする", command=set_nitaku_today).grid(
+    ttk.Button(nitaku_tab, text="本日の日付にする", command=set_nitaku_today).grid(
         row=4, column=1, sticky="w", padx=(8, 0), pady=(0, 8)
     )
 
@@ -510,7 +504,7 @@ def build_ui() -> tk.Tk:
             status_var.set(f"更新失敗: {exc}")
             messagebox.showerror("エラー", f"更新失敗: {exc}")
 
-    ttk.Button(nitaku_version_tab, text="index.html を更新する", command=handle_update_nitaku_meta).grid(
+    ttk.Button(nitaku_tab, text="index.html を更新する", command=handle_update_nitaku_meta).grid(
         row=5, column=0, columnspan=2, sticky="ew", pady=(4, 16)
     )
 
