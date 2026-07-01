@@ -6,6 +6,7 @@ import sqlite3
 import subprocess
 import shutil
 import sys
+import json
 import webbrowser
 from pathlib import Path
 from urllib.request import urlopen
@@ -29,7 +30,10 @@ DB_PATH = PROJECT_DIR / "db.sqlite3"
 DB_BACKUP_DIR = PROJECT_DIR / "backups"
 MEDIA_ROOT = PROJECT_DIR / "media"
 
-DB_URL = "https://sigepiyo338.pythonanywhere.com/static/db.sqlite3"
+SHIRITORI_DB_URL = "https://sigepiyo338.pythonanywhere.com/static/db.sqlite3"
+NITAKU_DB_URL = "https://sigepiyo338.pythonanywhere.com/static/database.db"
+NITAKU_DB_PATH = PROJECT_DIR / "nitaku_app" / "instance" / "database.db"
+SHIRITORI_DB_PATH = DB_PATH
 LOCAL_APP_URL = "http://127.0.0.1:8000/"
 CHROME_WINDOW_SIZE = "800,950"
 
@@ -140,30 +144,30 @@ def update_nitaku_meta(version: str, updated: str) -> None:
     write_nitaku_index(updated_content)
 
 
-def sync_db() -> None:
-    DB_PATH.parent.mkdir(parents=True, exist_ok=True)
-    with urlopen(DB_URL, timeout=20) as response:
+def sync_db(url: str, db_path: Path) -> None:
+    db_path.parent.mkdir(parents=True, exist_ok=True)
+    with urlopen(url, timeout=20) as response:
         data = response.read()
     if not data:
         raise ValueError("ダウンロードしたDBが空です。")
-    DB_PATH.write_bytes(data)
+    db_path.write_bytes(data)
 
 
-def backup_db() -> Path:
-    if not DB_PATH.exists():
-        raise FileNotFoundError(f"バックアップ対象の db.sqlite3 が見つかりません: {DB_PATH}")
+def backup_db(db_path: Path) -> Path:
+    if not db_path.exists():
+        raise FileNotFoundError(f"バックアップ対象の {db_path.name} が見つかりません: {db_path}")
     DB_BACKUP_DIR.mkdir(parents=True, exist_ok=True)
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    backup_path = DB_BACKUP_DIR / f"db_{timestamp}.sqlite3"
-    shutil.copy2(DB_PATH, backup_path)
+    backup_path = DB_BACKUP_DIR / f"{db_path.stem}_{timestamp}{db_path.suffix}"
+    shutil.copy2(db_path, backup_path)
     return backup_path
 
 
-def format_db_last_modified() -> str:
-    if not DB_PATH.exists():
-        return "ローカルDB最終更新日: （db.sqlite3 が存在しません）"
-    modified_at = datetime.fromtimestamp(DB_PATH.stat().st_mtime)
-    return f"ローカルDB最終更新日: {modified_at.strftime('%Y-%m-%d %H:%M:%S')}"
+def format_db_last_modified(db_path: Path, label: str) -> str:
+    if not db_path.exists():
+        return f"{label} 最終更新日: （存在しません）"
+    modified_at = datetime.fromtimestamp(db_path.stat().st_mtime)
+    return f"{label} 最終更新日: {modified_at.strftime('%Y-%m-%d %H:%M:%S')}"
 
 
 
@@ -284,6 +288,7 @@ def open_main_screen_in_app_mode(url: str) -> bool:
     return True
 
 
+
 def build_ui() -> tk.Tk:
     root = tk.Tk()
     root.title("しりとり師範くん ローカル管理ツール")
@@ -354,41 +359,7 @@ def build_ui() -> tk.Tk:
 
     updated_var = tk.StringVar(value=current_updated)
     status_var = tk.StringVar(value="準備完了")
-    db_last_modified_var = tk.StringVar(value=format_db_last_modified())
 
-    def handle_backup_db() -> None:
-        try:
-            backup_path = backup_db()
-            status_var.set(f"db.sqlite3 をバックアップしました: {backup_path.name}")
-            messagebox.showinfo(
-                "成功", f"db.sqlite3 をバックアップしました。\n保存先: {backup_path}"
-            )
-        except Exception as exc:
-            status_var.set(f"DBバックアップ失敗: {exc}")
-            messagebox.showerror("エラー", f"DBバックアップ失敗: {exc}")
-
-    def handle_sync_db() -> None:
-        if not messagebox.askyesno(
-            "確認", "オンライン版の db.sqlite3 でローカルを上書きします。続行しますか？"
-        ):
-            return
-        try:
-            backup_label = "（既存DBなし）"
-            if DB_PATH.exists():
-                backup_path = backup_db()
-                backup_label = backup_path.name
-            sync_db()
-            db_last_modified_var.set(format_db_last_modified())
-            status_var.set(f"db.sqlite3 を上書き同期しました。バックアップ: {backup_label}")
-            messagebox.showinfo(
-                "成功",
-                "db.sqlite3 を上書き同期しました。\n"
-                f"事前バックアップ: {backup_label}",
-            )
-            # 他のタブの一覧をリロード（該当機能は削除済み）
-        except Exception as exc:
-            status_var.set(f"DB同期失敗: {exc}")
-            messagebox.showerror("エラー", f"DB同期失敗: {exc}")
 
     notebook = ttk.Notebook(frame, style="Manager.TNotebook")
     notebook.grid(row=0, column=0, sticky="nsew")
@@ -451,31 +422,8 @@ def build_ui() -> tk.Tk:
         row=5, column=0, columnspan=2, sticky="ew", pady=(4, 16)
     )
 
-    ttk.Separator(version_tab, orient="horizontal").grid(
-        row=6, column=0, columnspan=2, sticky="ew", pady=(8, 16)
-    )
 
-    ttk.Label(version_tab, text="db.sqlite3 同期（上書き）").grid(
-        row=7, column=0, columnspan=2, sticky="w", pady=(0, 8)
-    )
-    ttk.Label(version_tab, text=f"ダウンロード元: {DB_URL}").grid(
-        row=8, column=0, columnspan=2, sticky="w"
-    )
-    ttk.Label(version_tab, text=f"保存先: {DB_PATH}").grid(
-        row=9, column=0, columnspan=2, sticky="w", pady=(0, 8)
-    )
-
-    ttk.Button(version_tab, text="現在のDBをバックアップする", command=handle_backup_db).grid(
-        row=10, column=0, columnspan=2, sticky="ew", pady=(4, 6)
-    )
-    ttk.Button(version_tab, text="オンライン版で上書きする", command=handle_sync_db).grid(
-        row=11, column=0, columnspan=2, sticky="ew", pady=(0, 6)
-    )
-    ttk.Label(version_tab, textvariable=db_last_modified_var).grid(
-        row=12, column=0, columnspan=2, sticky="w", pady=(0, 6)
-    )
-
-    # ---- 1.5. 2択くん管理タブ ----
+    # ---- 1.5. 二択くん管理タブ ----
     try:
         nitaku_content = read_nitaku_index()
         nitaku_version_val, nitaku_updated_val = extract_nitaku_meta(nitaku_content)
@@ -502,14 +450,14 @@ def build_ui() -> tk.Tk:
     nitaku_updated_var = tk.StringVar(value=nitaku_updated_val)
 
     nitaku_tab = ttk.Frame(notebook, style="Manager.TFrame", padding=12)
-    notebook.add(nitaku_tab, text="2択くん管理")
+    notebook.add(nitaku_tab, text="二択くん管理")
     nitaku_tab.columnconfigure(0, weight=1)
     nitaku_tab.rowconfigure(0, weight=1)
 
     nitaku_notebook = ttk.Notebook(nitaku_tab, style="Manager.TNotebook")
     nitaku_notebook.grid(row=0, column=0, sticky="nsew")
 
-    # ---- 2択くん: バージョン管理 ----
+    # ---- 二択くん: バージョン管理 ----
     nitaku_version_tab = ttk.Frame(nitaku_notebook, style="Manager.TFrame", padding=12)
     nitaku_version_tab.columnconfigure(1, weight=1)
     nitaku_notebook.add(nitaku_version_tab, text="バージョン管理")
@@ -556,8 +504,8 @@ def build_ui() -> tk.Tk:
         try:
             v_str = f"{nitaku_prefix_var.get()}{nitaku_major_var.get()}.{nitaku_minor_var.get()}.{nitaku_patch_var.get()}"
             update_nitaku_meta(v_str.strip(), nitaku_updated_var.get().strip())
-            status_var.set("2択くんの index.html を更新しました。")
-            messagebox.showinfo("成功", f"2択くんの index.html を更新しました。\nバージョン: {v_str}")
+            status_var.set("二択くんの index.html を更新しました。")
+            messagebox.showinfo("成功", f"二択くんの index.html を更新しました。\nバージョン: {v_str}")
         except Exception as exc:
             status_var.set(f"更新失敗: {exc}")
             messagebox.showerror("エラー", f"更新失敗: {exc}")
@@ -566,357 +514,138 @@ def build_ui() -> tk.Tk:
         row=5, column=0, columnspan=2, sticky="ew", pady=(4, 16)
     )
 
-    # ---- 2択くん: DB管理 ----
-    nitaku_db_tab = ttk.Frame(nitaku_notebook, style="Manager.TFrame", padding=12)
-    nitaku_notebook.add(nitaku_db_tab, text="DB管理")
 
-    ttk.Label(nitaku_db_tab, text="db.sqlite3 バックアップ（Django統合）").grid(
-        row=0, column=0, columnspan=2, sticky="w", pady=(0, 8)
-    )
-    ttk.Label(nitaku_db_tab, text="※ データベースはDjangoプロジェクトと統合されています。").grid(
-        row=1, column=0, columnspan=2, sticky="w"
-    )
-    ttk.Label(nitaku_db_tab, text=f"保存先: {DB_PATH}").grid(
-        row=2, column=0, columnspan=2, sticky="w", pady=(0, 8)
-    )
 
-    ttk.Button(nitaku_db_tab, text="現在のDBをバックアップする", command=handle_backup_db).grid(
-        row=3, column=0, columnspan=2, sticky="ew", pady=(4, 6)
-    )
-    ttk.Button(nitaku_db_tab, text="オンライン版で上書きする", command=handle_sync_db).grid(
-        row=4, column=0, columnspan=2, sticky="ew", pady=(0, 6)
-    )
-    ttk.Label(nitaku_db_tab, textvariable=db_last_modified_var).grid(
-        row=5, column=0, columnspan=2, sticky="w", pady=(0, 6)
-    )
+    # ---- 2. DB管理タブ ----
+    db_tab = ttk.Frame(notebook, style="Manager.TFrame", padding=12)
+    db_tab.columnconfigure(0, weight=1)
+    notebook.add(db_tab, text="DB管理")
 
-    # ---- 2択くん: テスト ----
-    nitaku_test_tab = ttk.Frame(nitaku_notebook, style="Manager.TFrame", padding=12)
-    nitaku_test_tab.columnconfigure(0, weight=1)
-    nitaku_notebook.add(nitaku_test_tab, text="テスト")
+    ttk.Label(db_tab, text="・Django管理画面 (ローカル環境)").grid(row=0, column=0, sticky="w")
+    admin_url_label = ttk.Label(
+        db_tab,
+        text=f"　-　{LOCAL_APP_URL}admin/",
+        foreground="#0066cc",
+        cursor="hand2",
+    )
+    admin_url_label.grid(row=1, column=0, sticky="w", pady=(0, 4))
+    admin_url_label.bind(
+        "<Button-1>",
+        lambda _event: webbrowser.open(f"{LOCAL_APP_URL}admin/"),
+    )
+    ttk.Separator(db_tab, orient="horizontal").grid(row=2, column=0, sticky="ew", pady=(8, 12))
+
+    ttk.Label(db_tab, text="対象データベースを選択してください:").grid(row=3, column=0, sticky="w", pady=(0, 8))
     
-    NITAKU_APP_PATH = PROJECT_DIR / "nitaku_app" / "app.py"
+    target_shiritori_var = tk.BooleanVar(value=True)
+    target_nitaku_var = tk.BooleanVar(value=False)
+    
+    ttk.Checkbutton(db_tab, text="しりとり師範くん (db.sqlite3)", variable=target_shiritori_var).grid(row=4, column=0, sticky="w")
+    ttk.Checkbutton(db_tab, text="究極二択くん (database.db)", variable=target_nitaku_var).grid(row=5, column=0, sticky="w", pady=(0, 16))
 
-    ttk.Label(nitaku_test_tab, text=f"実行対象: {NITAKU_APP_PATH}").grid(
-        row=1, column=0, sticky="w", pady=(0, 8)
-    )
+    def get_selected_dbs():
+        dbs = []
+        if target_shiritori_var.get():
+            dbs.append(("しりとり師範くん", SHIRITORI_DB_URL, SHIRITORI_DB_PATH))
+        if target_nitaku_var.get():
+            dbs.append(("究極二択くん", NITAKU_DB_URL, NITAKU_DB_PATH))
+        return dbs
 
-    def handle_run_nitaku_app_py() -> None:
-        nonlocal nitaku_app_server_process
-        if not NITAKU_APP_PATH.exists():
-            status_var.set("app.py 実行失敗: app.py が見つかりません。")
-            messagebox.showerror("エラー", f"app.py が見つかりません: {NITAKU_APP_PATH}")
+    def handle_backup():
+        dbs = get_selected_dbs()
+        if not dbs:
+            messagebox.showwarning("警告", "対象のデータベースが選択されていません。")
+            return
+        
+        success_msgs = []
+        for name, _, path in dbs:
+            try:
+                b_path = backup_db(path)
+                success_msgs.append(f"[{name}] -> {b_path.name}")
+            except Exception as e:
+                messagebox.showerror("エラー", f"{name}のバックアップ失敗: {e}")
+                return
+        
+        status_var.set(f"バックアップ完了: {len(success_msgs)}件")
+        messagebox.showinfo("成功", "バックアップが完了しました。\n" + "\n".join(success_msgs))
+        update_db_labels()
+
+    def handle_sync():
+        dbs = get_selected_dbs()
+        if not dbs:
+            messagebox.showwarning("警告", "対象のデータベースが選択されていません。")
             return
             
-        venv_python = PROJECT_DIR / ".venv" / "Scripts" / "python.exe"
-        python_executable = str(venv_python) if venv_python.exists() else sys.executable
+        if not messagebox.askyesno("確認", "オンライン版のDBでローカルを上書きします。続行しますか？"):
+            return
+            
+        success_msgs = []
+        for name, url, path in dbs:
+            try:
+                b_label = "（既存DBなし）"
+                if path.exists():
+                    b_path = backup_db(path)
+                    b_label = b_path.name
+                sync_db(url, path)
+                success_msgs.append(f"[{name}] 同期完了 (バックアップ: {b_label})")
+            except Exception as e:
+                messagebox.showerror("エラー", f"{name}の同期失敗: {e}")
+                return
+                
+        status_var.set(f"同期完了: {len(success_msgs)}件")
+        messagebox.showinfo("成功", "オンライン同期が完了しました。\n" + "\n".join(success_msgs))
+        update_db_labels()
+
+    def handle_restore():
+        from tkinter import filedialog
+        
+        dbs = get_selected_dbs()
+        if not dbs:
+            messagebox.showwarning("警告", "対象のデータベースが選択されていません。")
+            return
+        if len(dbs) > 1:
+            messagebox.showwarning("警告", "復元は1つのデータベースに対してのみ実行できます。")
+            return
+            
+        name, _, path = dbs[0]
+        
+        backup_file = filedialog.askopenfilename(
+            title=f"{name} のバックアップファイルを選択",
+            initialdir=str(DB_BACKUP_DIR),
+            filetypes=[("SQLite DB", "*.sqlite3 *.db"), ("All Files", "*.*")]
+        )
+        
+        if not backup_file:
+            return
+            
+        if not messagebox.askyesno("確認", f"選択したファイルで {name} を復元します。現在の状態はバックアップされます。続行しますか？"):
+            return
             
         try:
-            if nitaku_app_server_process is None or nitaku_app_server_process.poll() is not None:
-                creationflags = 0
-                if sys.platform == "win32":
-                    creationflags = subprocess.CREATE_NO_WINDOW
-                nitaku_app_server_process = subprocess.Popen(
-                    [python_executable, str(NITAKU_APP_PATH)],
-                    cwd=str(PROJECT_DIR / "nitaku_app"),
-                    creationflags=creationflags,
-                )
-                status_var.set("app.py を起動しました。")
-            else:
-                status_var.set("app.py は起動済みです。")
+            if path.exists():
+                backup_db(path)
+            shutil.copy2(backup_file, path)
+            status_var.set(f"{name} を復元しました: {Path(backup_file).name}")
+            messagebox.showinfo("成功", f"{name} の復元が完了しました。")
+            update_db_labels()
+        except Exception as e:
+            messagebox.showerror("エラー", f"復元失敗: {e}")
 
-            nitaku_local_url = "http://127.0.0.1:5000/"
-            if open_main_screen_in_app_mode(nitaku_local_url):
-                status_var.set("メイン画面をChromeアプリモードで開きました。")
-            else:
-                webbrowser.open(nitaku_local_url)
-                status_var.set(
-                    "Chromeが見つからないため通常ブラウザでメイン画面を開きました。"
-                )
-        except Exception as exc:
-            status_var.set(f"app.py 実行失敗: {exc}")
-            messagebox.showerror("エラー", f"app.py 実行失敗: {exc}")
+    ttk.Button(db_tab, text="バックアップ", command=handle_backup).grid(row=6, column=0, sticky="ew", pady=(0, 8))
+    ttk.Button(db_tab, text="オンライン版で上書き", command=handle_sync).grid(row=7, column=0, sticky="ew", pady=(0, 8))
+    ttk.Button(db_tab, text="ローカル版で復元", command=handle_restore).grid(row=8, column=0, sticky="ew", pady=(0, 16))
 
-    ttk.Button(nitaku_test_tab, text="ローカル起動", command=handle_run_nitaku_app_py).grid(
-        row=2, column=0, sticky="w"
-    )
-    ttk.Label(
-        nitaku_test_tab,
-        text="※ ローカル起動中はX ポスト機能が制限されます。",
-    ).grid(row=3, column=0, sticky="w", pady=(6, 0))
+    shiritori_status_var = tk.StringVar()
+    nitaku_status_var = tk.StringVar()
 
-    # ---- 2択くん: 性格 ----
-    personalities_tab = ttk.Frame(nitaku_notebook, style="Manager.TFrame", padding=12)
-    personalities_tab.columnconfigure(0, weight=1)
-    personalities_tab.rowconfigure(2, weight=1)
-    nitaku_notebook.add(personalities_tab, text="性格")
+    def update_db_labels():
+        shiritori_status_var.set(format_db_last_modified(SHIRITORI_DB_PATH, "しりとり師範くん"))
+        nitaku_status_var.set(format_db_last_modified(NITAKU_DB_PATH, "究極二択くん"))
 
-    ttk.Label(personalities_tab, text="性格一覧（db.sqlite3）").grid(
-        row=0, column=0, sticky="w", pady=(0, 8)
-    )
-
-    personalities_container = ttk.Frame(personalities_tab)
-    personalities_container.grid(row=2, column=0, sticky="nsew")
-    personalities_container.columnconfigure(0, weight=1)
-    personalities_container.rowconfigure(0, weight=1)
-
-    personalities_tree = ttk.Treeview(
-        personalities_container,
-        show="headings",
-        height=9,
-    )
-    personalities_tree.grid(row=0, column=0, sticky="nsew")
-
-    personalities_scroll_y = ttk.Scrollbar(
-        personalities_container,
-        orient="vertical",
-        command=personalities_tree.yview,
-    )
-    personalities_scroll_y.grid(row=0, column=1, sticky="ns")
-    personalities_tree.configure(yscrollcommand=personalities_scroll_y.set)
-
-    personalities_status_var = tk.StringVar(value="未読込")
-    ttk.Label(personalities_tab, textvariable=personalities_status_var).grid(
-        row=3, column=0, sticky="w", pady=(8, 0)
-    )
-
-    def reload_personalities() -> None:
-        try:
-            columns, rows = read_personalities()
-
-            personalities_tree.delete(*personalities_tree.get_children())
-            personalities_tree.configure(columns=columns)
-            for column in columns:
-                personalities_tree.heading(column, text=column)
-                personalities_tree.column(column, width=110, anchor="w")
-
-            for row in rows:
-                personalities_tree.insert("", "end", values=row)
-
-            personalities_status_var.set(f"{len(rows)} 件表示")
-        except Exception as exc:
-            personalities_status_var.set(f"読込失敗: {exc}")
-            status_var.set(f"性格タブ読込失敗: {exc}")
-
-    def handle_delete_selected_personality() -> None:
-        selected_items = personalities_tree.selection()
-        if not selected_items:
-            messagebox.showwarning("未選択", "削除する行を選択してください。")
-            return
-
-        item_id = selected_items[0]
-        values = personalities_tree.item(item_id, "values")
-        if not values:
-            messagebox.showerror("エラー", "選択行の値を取得できませんでした。")
-            return
-
-        try:
-            personality_id = int(values[0])
-        except (TypeError, ValueError):
-            messagebox.showerror("エラー", "選択行のIDが不正です。")
-            return
-
-        if not messagebox.askyesno(
-            "確認",
-            f"personality_id={personality_id} を削除します。\n"
-            "関連する scores も削除されます。続行しますか？",
-        ):
-            return
-
-        try:
-            deleted_personalities, deleted_scores = delete_personality_and_related_scores(
-                personality_id
-            )
-            reload_personalities()
-            status_var.set(
-                f"性格ID {personality_id} を削除（personalities:{deleted_personalities}, scores:{deleted_scores}）"
-            )
-            messagebox.showinfo(
-                "削除完了",
-                f"personalities: {deleted_personalities} 件\nscores: {deleted_scores} 件 を削除しました。",
-            )
-        except Exception as exc:
-            status_var.set(f"性格削除失敗: {exc}")
-            messagebox.showerror("エラー", f"性格削除失敗: {exc}")
-
-    ttk.Button(
-        personalities_tab, text="一覧を再読込", command=reload_personalities
-    ).grid(row=1, column=0, sticky="w")
-    ttk.Button(
-        personalities_tab,
-        text="選択中の性格を削除（scoresも削除）",
-        command=handle_delete_selected_personality,
-    ).grid(row=1, column=0, sticky="e")
+    ttk.Label(db_tab, textvariable=shiritori_status_var).grid(row=9, column=0, sticky="w", pady=(0, 4))
+    ttk.Label(db_tab, textvariable=nitaku_status_var).grid(row=10, column=0, sticky="w", pady=(0, 4))
     
-    try:
-        reload_personalities()
-    except Exception:
-        pass
-
-    # ---- 2択くん: 質問 ----
-    questions_tab = ttk.Frame(nitaku_notebook, style="Manager.TFrame", padding=12)
-    questions_tab.columnconfigure(0, weight=1)
-    questions_tab.rowconfigure(2, weight=1)
-    nitaku_notebook.add(questions_tab, text="質問")
-
-    ttk.Label(questions_tab, text="質問一覧（db.sqlite3）").grid(
-        row=0, column=0, sticky="w", pady=(0, 8)
-    )
-
-    questions_container = ttk.Frame(questions_tab)
-    questions_container.grid(row=2, column=0, sticky="nsew")
-    questions_container.columnconfigure(0, weight=1)
-    questions_container.rowconfigure(0, weight=1)
-
-    questions_tree = ttk.Treeview(
-        questions_container,
-        show="headings",
-        height=9,
-    )
-    questions_tree.grid(row=0, column=0, sticky="nsew")
-
-    questions_scroll_y = ttk.Scrollbar(
-        questions_container,
-        orient="vertical",
-        command=questions_tree.yview,
-    )
-    questions_scroll_y.grid(row=0, column=1, sticky="ns")
-    questions_tree.configure(yscrollcommand=questions_scroll_y.set)
-
-    questions_status_var = tk.StringVar(value="未読込")
-    ttk.Label(questions_tab, textvariable=questions_status_var).grid(
-        row=3, column=0, sticky="w", pady=(8, 0)
-    )
-
-    def reload_questions() -> None:
-        try:
-            columns, rows = read_questions()
-
-            questions_tree.delete(*questions_tree.get_children())
-            questions_tree.configure(columns=columns)
-            for column in columns:
-                questions_tree.heading(column, text=column)
-                questions_tree.column(column, width=140, anchor="w")
-
-            for row in rows:
-                questions_tree.insert("", "end", values=row)
-
-            questions_status_var.set(f"{len(rows)} 件表示")
-        except Exception as exc:
-            questions_status_var.set(f"読込失敗: {exc}")
-            status_var.set(f"質問タブ読込失敗: {exc}")
-
-    def handle_delete_selected_question() -> None:
-        selected_items = questions_tree.selection()
-        if not selected_items:
-            messagebox.showwarning("未選択", "削除する行を選択してください。")
-            return
-
-        item_id = selected_items[0]
-        values = questions_tree.item(item_id, "values")
-        if not values:
-            messagebox.showerror("エラー", "選択行の値を取得できませんでした。")
-            return
-
-        try:
-            question_id = int(values[0])
-        except (TypeError, ValueError):
-            messagebox.showerror("エラー", "選択行のIDが不正です。")
-            return
-
-        if not messagebox.askyesno(
-            "確認",
-            f"question_id={question_id} を削除します。\n"
-            "関連する answers と scores も削除されます。続行しますか？",
-        ):
-            return
-
-        try:
-            deleted_questions, deleted_answers, deleted_scores = (
-                delete_question_and_related_records(question_id)
-            )
-            reload_questions()
-            status_var.set(
-                f"質問ID {question_id} を削除（questions:{deleted_questions}, answers:{deleted_answers}, scores:{deleted_scores}）"
-            )
-            messagebox.showinfo(
-                "削除完了",
-                f"questions: {deleted_questions} 件\n"
-                f"answers: {deleted_answers} 件\n"
-                f"scores: {deleted_scores} 件 を削除しました。",
-            )
-        except Exception as exc:
-            status_var.set(f"質問削除失敗: {exc}")
-            messagebox.showerror("エラー", f"質問削除失敗: {exc}")
-
-    ttk.Button(questions_tab, text="一覧を再読込", command=reload_questions).grid(
-        row=1, column=0, sticky="w"
-    )
-    ttk.Button(
-        questions_tab,
-        text="選択中の質問を削除（answers/scoresも削除）",
-        command=handle_delete_selected_question,
-    ).grid(row=1, column=0, sticky="e")
-    
-    try:
-        reload_questions()
-    except Exception:
-        pass
-
-    # ---- 2択くん: 外部ツール ----
-    nitaku_tools_tab = ttk.Frame(nitaku_notebook, style="Manager.TFrame", padding=12)
-    nitaku_tools_tab.columnconfigure(0, weight=1)
-    nitaku_notebook.add(nitaku_tools_tab, text="外部ツール")
-
-    ttk.Label(nitaku_tools_tab, text="・究極二択くん(オンライン版)").grid(
-        row=0, column=0, sticky="w"
-    )
-    online_url = ttk.Label(
-        nitaku_tools_tab,
-        text="　-　https://sigepiyo338.pythonanywhere.com/",
-        foreground="#0066cc",
-        cursor="hand2",
-    )
-    online_url.grid(row=1, column=0, sticky="w", pady=(0, 8))
-    online_url.bind(
-        "<Button-1>",
-        lambda _event: webbrowser.open("https://sigepiyo338.pythonanywhere.com/"),
-    )
-
-    ttk.Label(nitaku_tools_tab, text="・PythonAnywhere Dashboard").grid(
-        row=2, column=0, sticky="w"
-    )
-    pa_url_nitaku = ttk.Label(
-        nitaku_tools_tab,
-        text="　-　https://www.pythonanywhere.com/",
-        foreground="#0066cc",
-        cursor="hand2",
-    )
-    pa_url_nitaku.grid(row=3, column=0, sticky="w", pady=(0, 8))
-    pa_url_nitaku.bind(
-        "<Button-1>",
-        lambda _event: webbrowser.open("https://www.pythonanywhere.com/"),
-    )
-
-    ttk.Label(nitaku_tools_tab, text="・Github - 2takukun_web").grid(
-        row=4, column=0, sticky="w"
-    )
-    github_url_nitaku = ttk.Label(
-        nitaku_tools_tab,
-        text="　-　https://github.com/sigepiyo338-droid/2takukun_web",
-        foreground="#0066cc",
-        cursor="hand2",
-    )
-    github_url_nitaku.grid(row=5, column=0, sticky="w")
-    github_url_nitaku.bind(
-        "<Button-1>",
-        lambda _event: webbrowser.open(
-            "https://github.com/sigepiyo338-droid/2takukun_web"
-        ),
-    )
-
-
-
+    update_db_labels()
 
     # ---- 3. テストタブ ----
     test_tab = ttk.Frame(notebook, style="Manager.TFrame", padding=12)
@@ -972,41 +701,6 @@ def build_ui() -> tk.Tk:
         text="※ Django開発サーバーはバックグラウンドで起動します。",
     ).grid(row=3, column=0, sticky="w", pady=(6, 0))
 
-
-    # ---- 6. 外部ツールタブ ----
-    tools_tab = ttk.Frame(notebook, style="Manager.TFrame", padding=12)
-    tools_tab.columnconfigure(0, weight=1)
-    notebook.add(tools_tab, text="外部ツール")
-
-    ttk.Label(tools_tab, text="・Django管理画面 (ローカル環境)").grid(
-        row=0, column=0, sticky="w"
-    )
-    admin_url_label = ttk.Label(
-        tools_tab,
-        text=f"　-　{LOCAL_APP_URL}admin/",
-        foreground="#0066cc",
-        cursor="hand2",
-    )
-    admin_url_label.grid(row=1, column=0, sticky="w", pady=(0, 8))
-    admin_url_label.bind(
-        "<Button-1>",
-        lambda _event: webbrowser.open(f"{LOCAL_APP_URL}admin/"),
-    )
-
-    ttk.Label(tools_tab, text="・PythonAnywhere Dashboard").grid(
-        row=2, column=0, sticky="w"
-    )
-    pa_url = ttk.Label(
-        tools_tab,
-        text="　-　https://www.pythonanywhere.com/",
-        foreground="#0066cc",
-        cursor="hand2",
-    )
-    pa_url.grid(row=3, column=0, sticky="w", pady=(0, 8))
-    pa_url.bind(
-        "<Button-1>",
-        lambda _event: webbrowser.open("https://www.pythonanywhere.com/"),
-    )
 
     ttk.Label(frame, textvariable=status_var).grid(
         row=1, column=0, sticky="w", pady=(10, 0)
