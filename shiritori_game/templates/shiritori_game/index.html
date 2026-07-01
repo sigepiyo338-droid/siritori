@@ -23,6 +23,7 @@
     
     <script>
         window.SHIRITORI_USER_ID = "{{ user.id|default:'' }}";
+        window.SHIRITORI_API_BASE = "{% url 'shiritori_game:image_list_api' %}";
     </script>
 </head>
 <body>
