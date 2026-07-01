@@ -47,6 +47,8 @@
                         {% else %}
                             <a href="{% url 'shiritori_game:login' %}" class="auth-link"><i class="fa-solid fa-right-to-bracket"></i> ログイン</a>
                         {% endif %}
+                        <span class="status-sep">|</span>
+                        <a href="{% url 'landing' %}" class="auth-link"><i class="fa-solid fa-house"></i> トップに戻る</a>
                     </div>
                 </div>
             </div>
