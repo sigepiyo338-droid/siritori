@@ -83,7 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 初期データのロード
     async function loadGameData() {
         try {
-            const response = await fetch('/api/images/');
+            const response = await fetch(window.SHIRITORI_API_BASE || '/shiritori/api/images/');
             if (!response.ok) {
                 throw new Error('APIデータの取得に失敗しました');
             }
