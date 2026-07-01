@@ -1,0 +1,241 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>究極二択くん</title>
+    <link rel="icon" type="image/png" href="{% static 'img/2takukunico.png' %}">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+    <div id="app">
+        <section id="menu-page" class="section" style="position: relative;">
+    <h1>究極二択くん</h1>
+    <img src="{% static 'img/2takukun.png' %}" alt="究極二択くん" id="title-image">
+        <p>〜 ヒトの価値観を学習中 〜</p>
+            <button id="btn-start" onclick="showSection('personality-page')">2択診断開始！</button>
+            <button id="btn-other" onclick="showSection('other-page')">
+                その他
+                <span class="button-subtext">（質問の投稿などが行えます）</span>
+            </button>
+    
+            <a href="{% url 'landing' %}" class="x-link" style="margin-top: 20px;">
+                ⌂ ゲーム選択に戻る
+            </a>
+            <a href="https://x.com/sigepiyo338" target="_blank" rel="noopener noreferrer" class="x-link">
+                𝕏 @sigepiyo338
+            </a>
+        </section>
+
+        <section id="question-post-page" class="section hidden">
+            <h2>質問投稿</h2>
+            <div style="border: 1px solid #ddd; padding: 15px; margin-bottom: 20px; border-radius: 8px;">
+                <h3>▼ 新しい「二択」を投稿</h3>
+                <input type="text" id="new-q-text" placeholder="例：一生夏か、一生冬か？">
+                <div style="display: flex; gap: 5px;">
+                    <input type="text" id="new-q-a" placeholder="選択肢A">
+                    <input type="text" id="new-q-b" placeholder="選択肢B">
+                </div>
+                <input type="text" id="new-q-author" placeholder="あなたの名前">
+                <button onclick="submitPost()">問題を登録</button>
+            </div>
+            <button onclick="showSection('other-page')" style="background-color: #95a5a6;">戻る</button>
+        </section>
+
+        <section id="personality-post-page" class="section hidden">
+            <h2>性格投稿</h2>
+            <div style="border: 1px solid #ddd; padding: 15px; margin-bottom: 20px; border-radius: 8px;">
+                <h3>▼ 新しい「性格」を定義</h3>
+                <p style="font-size: 0.7rem;">例：性格名「エゴイスト」、ラベル「エゴ度」</p>
+                <input type="text" id="user-p-name" placeholder="性格名">
+                <input type="text" id="user-p-label" placeholder="表示ラベル">
+                <button onclick="addUserPersonality()" style="background-color: #27ae60;">性格を追加</button>
+            </div>
+            <button onclick="showSection('other-page')" style="background-color: #95a5a6;">戻る</button>
+        </section>
+
+        <section id="other-page" class="section hidden">
+            <h2>その他</h2>
+            <button onclick="showSection('question-post-page')">質問投稿</button>
+            <button onclick="showSection('personality-post-page')">性格投稿</button>
+            <button onclick="window.open('https://github.com/sigepiyo338-droid/2takukun_web', '_blank', 'noopener,noreferrer')">
+                GitHub(デベロッパー向け)
+            </button>
+            <button onclick="showSection('menu-page')" style="background-color: #95a5a6;">戻る</button>
+        </section>
+
+        <section id="secret-page" class="section hidden">
+            <p style="font-weight: bold; color: #3498db;" id="secret-q-number">7ea / 13ba</p>
+            <h2 id="secret-q-text">何やってるの？</h2>
+            <p id="secret-q-author" style="font-size: 0.8rem; color: gray; margin-bottom: 20px;">投稿者:????</p>
+
+            <div id="secret-question-block">
+                <button id="secret-btn-a" onclick="selectSecretOption('A')" style="background-color: #e74c3c;">デバッグモード起動</button>
+                <p>vs</p>
+                <button id="secret-btn-b" onclick="selectSecretOption('B')" style="background-color: #2ecc71;">暇つぶし</button>
+
+                <hr style="margin: 30px 0 15px 0; border: 0; border-top: 1px solid #eee;">
+                <button onclick="showSection('menu-page')" style="background-color: #95a5a6; font-size: 0.8rem; width: auto; margin: 0 auto; padding: 8px 20px;">
+                    診断を中断してメニューに戻る
+                </button>
+            </div>
+
+            <div id="secret-answer-block" class="hidden">
+                <p id="secret-answer-message" style="font-size: 1.8rem; font-weight: bold; margin-bottom: 16px;"></p>
+                <button onclick="showSection('menu-page')" style="background-color: #95a5a6; width: auto; margin: 0 auto; padding: 8px 20px;">
+                    戻る
+                </button>
+            </div>
+        </section>
+
+        <section id="personality-page" class="section hidden">
+            <h2>設定</h2>
+            <div style="margin: 20px 0; padding: 10px; border: 1px dashed #3498db; border-radius: 8px;">
+                <p style="font-weight: bold; margin-bottom: 10px;">診断の出題数を選択</p>
+                <label><input type="radio" name="q-count" value="1"> 1問</label>
+                <label><input type="radio" name="q-count" value="5"> 5問</label>
+                <label><input type="radio" name="q-count" value="10" checked> 10問</label>
+            </div>
+
+            <p style="font-size: 0.8rem;">あなたの性格で当てはまるものにチェック</p>
+            <div id="personality-list"></div>
+            <button onclick="startDiagnosis()">2択診断開始！</button>
+            <button onclick="showSection('menu-page')">決定して戻る</button>
+        </section>
+
+        <section id="diagnosis-page" class="section hidden">
+            <p id="q-number" style="font-weight: bold; color: #3498db;"></p>
+            <h2 id="q-text">問題読み込み中...</h2>
+            <p id="q-author" style="font-size: 0.8rem; color: gray; margin-bottom: 20px;"></p>
+    
+            <button id="btn-a" onclick="selectOption('A')" style="background-color: #e74c3c;"></button>
+            <p>vs</p>
+         <button id="btn-b" onclick="selectOption('B')" style="background-color: #2ecc71;"></button>
+
+         <hr style="margin: 30px 0 15px 0; border: 0; border-top: 1px solid #eee;">
+            <button onclick="showSection('menu-page')" style="background-color: #95a5a6; font-size: 0.8rem; width: auto; margin: 0 auto; padding: 8px 20px;">
+                診断を中断してメニューに戻る
+            </button>
+        </section>
+
+        <section id="result-page" class="section hidden">
+            <h2>診断終了！</h2>
+            <p id="total-result" style="font-weight: bold; font-size: 1.2rem;"></p>
+            
+            <button onclick="shareOnX()" style="background-color: #000; color: #fff; margin-bottom: 10px;">
+                𝕏 で結果をシェアする
+            </button>
+            
+            <hr>
+            <div style="max-height: 200px; overflow-y: auto; margin-bottom: 20px;">
+                <ul id="result-list" style="text-align: left; font-size: 0.85rem; list-style: none; padding: 0;"></ul>
+            </div>
+            <canvas id="resultChart"></canvas>
+            <button onclick="showSection('menu-page')">トップに戻る</button>
+        </section>
+
+
+        <div id="app-meta" aria-label="アプリ情報">
+            <span id="app-version">v1.2.02</span>
+            <span>最終更新: 2026-05-05</span>
+        </div>
+    </div>
+    <script>
+        // Django urlタグを利用してAPIのベースURLを動的に定義
+        const API_BASE_URL = "{% url 'nitaku_app:index' %}api/";
+    </script>
+    <script src="{% static 'js/app.js' %}"></script>
+    
+    <script>
+        function getTitleImageByDate(date) {
+            const month = date.getMonth() + 1;
+            const day = date.getDate();
+            const md = month * 100 + day;
+
+            if (md >= 101 && md <= 107) return '2tk-01.png';
+            if (md >= 208 && md <= 214) return '2tk-02.png';
+            if (md >= 325 && md <= 331) return '2tk-03.png';
+            if (md === 401) return '2tk-04.png';
+            if (md >= 402 && md <= 408) return '2tk-05.png';
+            if (md >= 505 && md <= 511) return '2tk-06.png';
+            if (md >= 725 && md <= 731) return '2tk-07.png';
+            if (md >= 809 && md <= 815) return '2tk-08.png';
+            if (md >= 1025 && md <= 1031) return '2tk-09.png';
+            if (md >= 1218 && md <= 1224) return '2tk-10.png';
+
+            return '2takukun.png';
+        }
+
+        function selectSecretOption(choice) {
+            const questionBlock = document.getElementById('secret-question-block');
+            const answerBlock = document.getElementById('secret-answer-block');
+            const answerMessage = document.getElementById('secret-answer-message');
+            if (!questionBlock || !answerBlock || !answerMessage) return;
+
+            questionBlock.classList.add('hidden');
+            answerBlock.classList.remove('hidden');
+            answerMessage.textContent = choice === 'A' ? 'そんなものはありません' : '帰れ';
+        }
+
+        window.addEventListener('DOMContentLoaded', async () => {
+            const titleImage = document.getElementById('title-image');
+            const secretQuestionBlock = document.getElementById('secret-question-block');
+            const secretAnswerBlock = document.getElementById('secret-answer-block');
+            const easterEggTapTarget = 7;
+            const easterEggResetMs = 3000;
+            let easterEggTapCount = 0;
+            let easterEggLastTapAt = 0;
+
+            if (titleImage) {
+                const imageFilename = getTitleImageByDate(new Date());
+                titleImage.src = "{% static 'img/' %}" + imageFilename;
+
+                const handleEasterEggTap = () => {
+                    const now = Date.now();
+                    if (now - easterEggLastTapAt > easterEggResetMs) {
+                        easterEggTapCount = 0;
+                    }
+                    easterEggTapCount += 1;
+                    easterEggLastTapAt = now;
+
+                    if (easterEggTapCount >= easterEggTapTarget) {
+                        easterEggTapCount = 0;
+                        if (secretQuestionBlock && secretAnswerBlock) {
+                            secretQuestionBlock.classList.remove('hidden');
+                            secretAnswerBlock.classList.add('hidden');
+                        }
+                        showSection('secret-page');
+                    }
+                };
+
+                titleImage.addEventListener('click', handleEasterEggTap);
+                titleImage.addEventListener('touchstart', handleEasterEggTap, { passive: true });
+            }
+
+            try {
+                const res = await fetch(`${API_BASE_URL}personalities`);
+                const ps = await res.json();
+                const list = document.getElementById('personality-list');
+                if (list) {
+                    list.innerHTML = "";
+                    ps.forEach(p => {
+                        const label = document.createElement('label');
+                        label.style.display = "block";
+                        label.innerHTML = `<input type="checkbox" value="${p.id}" onchange="saveUserSettings()"> ${p.name}`;
+                        list.appendChild(label);
+                    });
+                }
+                loadUserSettings();
+                document.querySelectorAll('input[name="q-count"]').forEach(r => {
+                    r.onchange = saveUserSettings;
+                });
+            } catch (e) {
+                console.error("読み込みに失敗しました", e);
+            }
+        });
+    </script>
+</body>
+</html>
