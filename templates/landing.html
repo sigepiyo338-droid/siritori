@@ -1,0 +1,397 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="sigepiyo338が作ったゲームアプリ一覧。しりとり師範くんと究極二択くんが遊べます。">
+    <title>sigepiyo338's Games</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;700;900&family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+
+    <style>
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --bg-dark: #0d0d1a;
+            --bg-card: rgba(255, 255, 255, 0.04);
+            --border: rgba(255, 255, 255, 0.1);
+            --text-primary: #f0f0ff;
+            --text-secondary: #9090b8;
+            --accent-green: #4ade80;
+            --accent-blue: #60a5fa;
+            --accent-purple: #a78bfa;
+            --accent-orange: #fb923c;
+            --glow-green: rgba(74, 222, 128, 0.25);
+            --glow-blue: rgba(96, 165, 250, 0.25);
+        }
+
+        html, body {
+            min-height: 100vh;
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            font-family: 'Noto Sans JP', 'Outfit', sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* ── 背景アニメーション ── */
+        .bg-blobs {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.35;
+            animation: float 12s ease-in-out infinite alternate;
+        }
+
+        .blob-1 {
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, #4ade80, #1d8a4f);
+            top: -150px;
+            left: -150px;
+            animation-delay: 0s;
+        }
+
+        .blob-2 {
+            width: 450px;
+            height: 450px;
+            background: radial-gradient(circle, #60a5fa, #1e40af);
+            bottom: -120px;
+            right: -120px;
+            animation-delay: -4s;
+        }
+
+        .blob-3 {
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, #a78bfa, #5b21b6);
+            top: 40%;
+            left: 55%;
+            animation-delay: -8s;
+        }
+
+        @keyframes float {
+            0%   { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(30px, 40px) scale(1.08); }
+        }
+
+        /* ── メインレイアウト ── */
+        .page {
+            position: relative;
+            z-index: 1;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1.5rem 3rem;
+        }
+
+        /* ── ヘッダー ── */
+        .site-header {
+            text-align: center;
+            margin-bottom: 3.5rem;
+        }
+
+        .site-header .eyebrow {
+            font-size: 0.78rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            margin-bottom: 0.6rem;
+        }
+
+        .site-header h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: clamp(2rem, 6vw, 3.2rem);
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--accent-green) 0%, var(--accent-blue) 50%, var(--accent-purple) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.15;
+            margin-bottom: 0.8rem;
+        }
+
+        .site-header .subtitle {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            font-weight: 300;
+        }
+
+        /* ── カードグリッド ── */
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.8rem;
+            width: 100%;
+            max-width: 720px;
+        }
+
+        /* ── 各アプリカード ── */
+        .app-card {
+            position: relative;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 2rem 1.8rem 1.8rem;
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: 1rem;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            overflow: hidden;
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+                        box-shadow 0.3s ease,
+                        border-color 0.3s ease;
+            cursor: pointer;
+        }
+
+        .app-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 20px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .app-card:hover {
+            transform: translateY(-8px) scale(1.02);
+        }
+
+        .app-card:hover::before {
+            opacity: 1;
+        }
+
+        /* しりとり師範くん — グリーン系 */
+        .card-shiritori {
+            --card-accent: var(--accent-green);
+            --card-glow: var(--glow-green);
+        }
+
+        .card-shiritori::before {
+            background: radial-gradient(ellipse at top, rgba(74, 222, 128, 0.12), transparent 70%);
+        }
+
+        .card-shiritori:hover {
+            border-color: rgba(74, 222, 128, 0.5);
+            box-shadow: 0 20px 60px var(--glow-green), 0 0 0 1px rgba(74, 222, 128, 0.15);
+        }
+
+        /* 究極二択くん — ブルー系 */
+        .card-nitaku {
+            --card-accent: var(--accent-blue);
+            --card-glow: var(--glow-blue);
+        }
+
+        .card-nitaku::before {
+            background: radial-gradient(ellipse at top, rgba(96, 165, 250, 0.12), transparent 70%);
+        }
+
+        .card-nitaku:hover {
+            border-color: rgba(96, 165, 250, 0.5);
+            box-shadow: 0 20px 60px var(--glow-blue), 0 0 0 1px rgba(96, 165, 250, 0.15);
+        }
+
+        /* ── カードアイコン ── */
+        .card-icon {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 0.2rem;
+            position: relative;
+        }
+
+        .card-shiritori .card-icon {
+            background: radial-gradient(circle, rgba(74, 222, 128, 0.2), rgba(74, 222, 128, 0.05));
+            box-shadow: 0 0 30px rgba(74, 222, 128, 0.2);
+        }
+
+        .card-nitaku .card-icon {
+            background: radial-gradient(circle, rgba(96, 165, 250, 0.2), rgba(96, 165, 250, 0.05));
+            box-shadow: 0 0 30px rgba(96, 165, 250, 0.2);
+        }
+
+        .card-icon img {
+            width: 70px;
+            height: 70px;
+            object-fit: contain;
+            border-radius: 50%;
+        }
+
+        /* ── カードテキスト ── */
+        .card-name {
+            font-size: 1.3rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            line-height: 1.3;
+        }
+
+        .card-shiritori .card-name { color: var(--accent-green); }
+        .card-nitaku .card-name   { color: var(--accent-blue); }
+
+        .card-desc {
+            font-size: 0.87rem;
+            color: var(--text-secondary);
+            line-height: 1.7;
+            font-weight: 300;
+        }
+
+        /* ── CTAボタン ── */
+        .card-btn {
+            margin-top: 0.4rem;
+            padding: 0.65rem 1.8rem;
+            border-radius: 50px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            border: none;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .card-shiritori .card-btn {
+            background: linear-gradient(135deg, #4ade80, #16a34a);
+            color: #052e16;
+            box-shadow: 0 4px 15px rgba(74, 222, 128, 0.35);
+        }
+
+        .card-nitaku .card-btn {
+            background: linear-gradient(135deg, #60a5fa, #2563eb);
+            color: #eff6ff;
+            box-shadow: 0 4px 15px rgba(96, 165, 250, 0.35);
+        }
+
+        .app-card:hover .card-btn {
+            transform: scale(1.05);
+            box-shadow: 0 6px 25px var(--card-glow);
+        }
+
+        /* ── 区切りバッジ ── */
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            color: var(--text-secondary);
+            font-size: 0.78rem;
+            letter-spacing: 0.12em;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        /* ── フッター ── */
+        .site-footer {
+            margin-top: 3rem;
+            text-align: center;
+            font-size: 0.78rem;
+            color: var(--text-secondary);
+            line-height: 2;
+        }
+
+        .site-footer a {
+            color: var(--accent-purple);
+            text-decoration: none;
+        }
+
+        .site-footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* ── パルスアニメーション（new バッジなど） ── */
+        @keyframes pulse-ring {
+            0%   { transform: scale(1); opacity: 0.7; }
+            100% { transform: scale(1.6); opacity: 0; }
+        }
+
+        /* ── レスポンシブ ── */
+        @media (max-width: 480px) {
+            .cards {
+                grid-template-columns: 1fr;
+                max-width: 360px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 背景 -->
+    <div class="bg-blobs">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
+
+    <div class="page">
+
+        <!-- ヘッダー -->
+        <header class="site-header">
+            <p class="eyebrow">sigepiyo338's Games</p>
+            <h1>どっちで遊ぶ？</h1>
+            <p class="subtitle">好きなゲームを選んでください</p>
+        </header>
+
+        <!-- カード -->
+        <div class="cards">
+
+            <!-- しりとり師範くん -->
+            <a class="app-card card-shiritori" href="{% url 'shiritori_game:game_index' %}" id="link-shiritori">
+                <div class="card-icon">
+                    <img src="{% static 'img/sihankun_100t.png' %}" alt="しりとり師範くんアイコン">
+                </div>
+                <p class="card-name">しりとり師範くん</p>
+                <p class="card-desc">画像をつなげてしりとりをするゲームです。<br>どれだけ長くつなげられるか挑戦しよう！</p>
+                <span class="card-btn">遊ぶ →</span>
+            </a>
+
+            <!-- 究極二択くん -->
+            <a class="app-card card-nitaku" href="{% url 'nitaku_app:index' %}" id="link-nitaku">
+                <div class="card-icon">
+                    <img src="{% static 'img/2takukunico.png' %}" alt="究極二択くんアイコン">
+                </div>
+                <p class="card-name">究極二択くん</p>
+                <p class="card-desc">あなたの価値観を2択で診断するゲームです。<br>ヒトの価値観を学習中！</p>
+                <span class="card-btn">遊ぶ →</span>
+            </a>
+
+        </div>
+
+        <!-- フッター -->
+        <footer class="site-footer">
+            <p>© 2026 sigepiyo338 &nbsp;|&nbsp;
+                <a href="https://x.com/sigepiyo338" target="_blank" rel="noopener noreferrer">𝕏 @sigepiyo338</a>
+            </p>
+        </footer>
+
+    </div>
+
+</body>
+</html>
