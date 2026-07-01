@@ -38,9 +38,16 @@ def get_personalities(request):
 def get_questions(request):
     """質問一覧を返す API"""
     try:
+        count_param = request.GET.get('count', '10')
+        try:
+            limit = int(count_param)
+        except ValueError:
+            limit = 10
+
         conn = get_db()
         rows = conn.execute(
-            'SELECT id, text, option_a, option_b, author FROM questions'
+            'SELECT id, text, option_a, option_b, author FROM questions ORDER BY RANDOM() LIMIT ?',
+            (limit,)
         ).fetchall()
         conn.close()
         data = [
@@ -161,28 +168,37 @@ def submit_answer(request):
         ).fetchone()['cnt']
         conn.close()
 
+        total = total_a + total_b
+        percent_a = int((total_a / total) * 100) if total > 0 else 0
+        percent_b = 100 - percent_a if total > 0 else 0
+
         return JsonResponse(
-            {'total_a': total_a, 'total_b': total_b},
+            {
+                'total_a': total_a,
+                'total_b': total_b,
+                'percent_a': percent_a,
+                'percent_b': percent_b
+            },
             json_dumps_params={'ensure_ascii': False},
         )
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 
 
+@csrf_exempt
+@require_POST
 def radar_scores(request):
     """性格ごとのスコア集計を返す API"""
     try:
-        question_ids_param = request.GET.get('question_ids', '')
-        personality_ids_param = request.GET.get('personality_ids', '')
+        body = json.loads(request.body)
+        personality_ids = body.get('personality_ids', [])
+        answers = body.get('answers', [])
 
-        if not question_ids_param or not personality_ids_param:
-            return JsonResponse({'error': 'パラメータが不足しています'}, status=400)
-
-        question_ids = [int(x) for x in question_ids_param.split(',') if x]
-        personality_ids = [int(x) for x in personality_ids_param.split(',') if x]
+        if not personality_ids or not answers:
+            return JsonResponse([], safe=False)
 
         conn = get_db()
-        result = {}
+        series = []
 
         for pid in personality_ids:
             p = conn.execute(
@@ -190,24 +206,30 @@ def radar_scores(request):
             ).fetchone()
             if not p:
                 continue
-
-            scores_data = {}
-            for qid in question_ids:
+            
+            total_score = 0
+            for ans in answers:
+                qid = ans.get('question_id')
+                choice = ans.get('choice')
+                if not qid or not choice:
+                    continue
+                
                 row = conn.execute(
-                    'SELECT option, count FROM scores WHERE question_id=? AND personality_id=?',
-                    (qid, pid),
-                ).fetchall()
-                for r in row:
-                    opt = r['option']
-                    scores_data[f'{qid}_{opt}'] = r['count']
+                    'SELECT count FROM scores WHERE question_id=? AND personality_id=? AND option=?',
+                    (qid, pid, choice)
+                ).fetchone()
+                if row:
+                    total_score += row['count']
+            
+            normalized_score = min(total_score, 5)
 
-            result[pid] = {
+            series.append({
                 'name': p['name'],
                 'label': p['label'],
-                'scores': scores_data,
-            }
+                'value': normalized_score
+            })
 
         conn.close()
-        return JsonResponse(result, json_dumps_params={'ensure_ascii': False})
+        return JsonResponse(series, safe=False, json_dumps_params={'ensure_ascii': False})
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
