@@ -12,7 +12,7 @@ function showSection(sectionId) {
 // 診断開始
 async function startDiagnosis() {
     const count = document.querySelector('input[name="q-count"]:checked').value;
-    const response = await fetch(`/api/questions?count=${count}`);
+    const response = await fetch(`${API_BASE_URL}questions?count=${count}`);
     currentQuestions = await response.json();
     
     if (currentQuestions.length === 0) {
@@ -46,7 +46,7 @@ async function selectOption(choice) {
                       .map(cb => parseInt(cb.value));
 
     // APIから結果を取得
-    const response = await fetch('/api/answer', {
+    const response = await fetch(`${API_BASE_URL}answer`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ question_id: q.id, choice: choice, personality_ids: pIds })
@@ -99,7 +99,7 @@ async function drawRadarChart() {
             document.querySelectorAll('#personality-list input:checked')
         ).map((cb) => parseInt(cb.value, 10));
 
-        const res = await fetch('/api/radar-scores', {
+        const res = await fetch(`${API_BASE_URL}radar-scores`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -145,7 +145,7 @@ async function submitPost() {
 
     if (!text || !a || !b) return alert("必須項目を入力してください。");
 
-    await fetch('/api/post/question', {
+    await fetch(`${API_BASE_URL}post/question`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text, option_a: a, option_b: b, author })
@@ -162,7 +162,7 @@ async function addUserPersonality() {
     // 入力バリデーションの追加：空欄の場合は中断
     if (!name || !label) return alert("必須項目を入力してください。");
 
-    const res = await fetch('/api/post/personality', {
+    const res = await fetch(`${API_BASE_URL}post/personality`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, label })

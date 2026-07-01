@@ -2,9 +2,24 @@
 setlocal
 cd /d "%~dp0"
 
+REM Try to use pythonw.exe from the project virtual environment (.venv)
+set "VENV_PYTHONW=..\.venv\Scripts\pythonw.exe"
+if exist "%VENV_PYTHONW%" (
+    start "" "%VENV_PYTHONW%" "local_manager.py"
+    goto :success
+)
+
+REM Fallback to python.exe from the virtual environment
+set "VENV_PYTHON=..\.venv\Scripts\python.exe"
+if exist "%VENV_PYTHON%" (
+    start "" "%VENV_PYTHON%" "local_manager.py"
+    goto :success
+)
+
+REM If no virtual environment is found, try system Python
 where py >nul 2>nul
 if %errorlevel%==0 (
-    :: start を使うことで、Pythonを別プロセスとして切り離して起動します
+    REM Use start to launch Python as a detached process
     start "" pyw -3 "local_manager.py"
     goto :success
 )
@@ -17,19 +32,16 @@ if %errorlevel%==0 (
 
 where python >nul 2>nul
 if %errorlevel%==0 (
-    :: /b を抜いた start "" で完全に分離します
+    REM Detach completely using start "" without /b
     start "" python "local_manager.py"
     goto :success
 )
 
-echo Python が見つかりませんでした。
-echo Python 3 をインストールしてから再実行してください。
+echo Python was not found.
+echo Please install Python 3 and try again.
 pause
 goto :error
 
 :success
-:: 起動に成功したら、このバッチウィンドウ自体を即座に閉じます
+REM Close this batch window immediately on success
 exit
-
-:error
-exit /b 1

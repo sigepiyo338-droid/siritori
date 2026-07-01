@@ -8,7 +8,7 @@ app = Flask(__name__)
 # --- データベース設定 ---
 # PythonAnywhereでは絶対パスを使うのが最も安全です
 basedir = os.path.abspath(os.path.dirname(__file__))
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.abspath(os.path.join(basedir, '..', 'siritori', 'db.sqlite3'))
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.abspath(os.path.join(basedir, '..', 'db.sqlite3'))
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
 

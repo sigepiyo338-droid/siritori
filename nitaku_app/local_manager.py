@@ -17,7 +17,7 @@ import os
 
 BASE_DIR = Path(__file__).resolve().parent
 INDEX_PATH = BASE_DIR / "templates" / "index.html"
-DB_PATH = BASE_DIR.parent / "siritori" / "db.sqlite3"
+DB_PATH = BASE_DIR.parent / "db.sqlite3"
 DB_BACKUP_DIR = DB_PATH.parent / "backups"
 DB_URL = "https://sigepiyo338.pythonanywhere.com/static/database.db"
 LOCAL_APP_URL = "http://127.0.0.1:5000/"
