@@ -75,6 +75,7 @@ body {
     0% {
         transform: translate(0, 0) scale(1);
     }
+
     100% {
         transform: translate(50px, 100px) scale(1.2);
     }
@@ -206,8 +207,13 @@ body {
 }
 
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
 /* お題カード */
@@ -215,8 +221,10 @@ body {
     max-width: 320px;
     margin: 0 auto;
     padding: 1rem;
-    padding-top: 2.5rem; /* バッジが画像と重ならないように上部余白を確保 */
-    position: relative; /* 絶対配置の基準点をカードに固定 */
+    padding-top: 2.5rem;
+    /* バッジが画像と重ならないように上部余白を確保 */
+    position: relative;
+    /* 絶対配置の基準点をカードに固定 */
 }
 
 .card-badge {
@@ -260,7 +268,7 @@ body {
     font-weight: 700;
     letter-spacing: 2px;
     color: #fff;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .card-info {
@@ -327,7 +335,8 @@ body {
     max-height: 100%;
     object-fit: contain;
     border-radius: 10px;
-    pointer-events: none; /* 画像自体へのクリックイベントを回避 */
+    pointer-events: none;
+    /* 画像自体へのクリックイベントを回避 */
 }
 
 /* ライフ（ハート）表示 */
@@ -360,9 +369,21 @@ body {
 }
 
 @keyframes shake-anim {
-    0%, 100% { transform: translateX(0); }
-    20%, 60% { transform: translateX(-8px); }
-    40%, 80% { transform: translateX(8px); }
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    20%,
+    60% {
+        transform: translateX(-8px);
+    }
+
+    40%,
+    80% {
+        transform: translateX(8px);
+    }
 }
 
 
@@ -374,8 +395,15 @@ body {
 }
 
 @keyframes scale-up {
-    0% { transform: scale(0.9); opacity: 0; }
-    100% { transform: scale(1); opacity: 1; }
+    0% {
+        transform: scale(0.9);
+        opacity: 0;
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
 }
 
 .status-icon {
@@ -453,8 +481,15 @@ body {
 }
 
 @keyframes fade-in {
-    0% { opacity: 0; transform: translateY(10px); }
-    100% { opacity: 1; transform: translateY(0); }
+    0% {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .section-title {
@@ -480,10 +515,12 @@ body {
 .history-timeline::-webkit-scrollbar {
     width: 6px;
 }
+
 .history-timeline::-webkit-scrollbar-track {
-    background: rgba(0,0,0,0.02);
+    background: rgba(0, 0, 0, 0.02);
     border-radius: 10px;
 }
+
 .history-timeline::-webkit-scrollbar-thumb {
     background: var(--card-border);
     border-radius: 10px;
@@ -502,7 +539,7 @@ body {
 }
 
 .history-item:hover {
-    background: rgba(255,255,255,0.9);
+    background: rgba(255, 255, 255, 0.9);
 }
 
 .history-left {
@@ -580,15 +617,19 @@ body {
         gap: 1rem;
         align-items: flex-start;
     }
+
     .score-board {
         width: 100%;
         justify-content: space-between;
     }
+
     .game-card {
         padding: 1.5rem;
     }
+
     .question-card {
-        padding-top: 2.5rem; /* スマホサイズでもバッジの重なりを防ぐ */
+        padding-top: 2.5rem;
+        /* スマホサイズでもバッジの重なりを防ぐ */
     }
 }
 
@@ -812,5 +853,20 @@ body {
     transform: scale(1.03);
 }
 
+/* --- 出題設定画面のラジオボタン表示の修正 --- */
+.form-group input[type="radio"] {
+    width: auto !important;
+    /* 巨大化を解除して元のサイズに戻す */
+    margin-right: 0.35rem;
+    /* ボタンと文字の間に適切な隙間を作る */
+    padding: 0 !important;
+    /* 余計な内白を消す */
+}
 
-
+/* ラジオボタンを含むラベル全体の折り返しを防ぎ、横1行に固定する */
+.form-group label {
+    display: inline-flex !important;
+    align-items: center;
+    white-space: nowrap;
+    /* 💡 絶対に文字を折り返さない設定 */
+}
