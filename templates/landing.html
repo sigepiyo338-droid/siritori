@@ -21,17 +21,19 @@
         }
 
         :root {
-            --bg-dark: #0d0d1a;
-            --bg-card: rgba(255, 255, 255, 0.04);
-            --border: rgba(255, 255, 255, 0.1);
-            --text-primary: #f0f0ff;
-            --text-secondary: #9090b8;
-            --accent-green: #4ade80;
-            --accent-blue: #60a5fa;
-            --accent-purple: #a78bfa;
-            --accent-orange: #fb923c;
-            --glow-green: rgba(74, 222, 128, 0.25);
-            --glow-blue: rgba(96, 165, 250, 0.25);
+            --bg-dark: #fdf6e3; /* パステルイエロー背景 */
+            --bg-card: rgba(255, 255, 255, 0.85); /* 半透明の白カード */
+            --border: rgba(255, 179, 186, 0.5); /* パステルピンクの境界線 */
+            --text-primary: #5d5d5d;
+            --text-secondary: #8c8c8c;
+            --accent-green: #2b8a3e; /* 少し濃いめのグリーンでテキスト視認性確保 */
+            --accent-blue: #1864ab; /* 少し濃いめのブルー */
+            --accent-purple: #845ef7;
+            --accent-orange: #f59f00;
+            
+            --glow-green: rgba(186, 255, 201, 0.6); /* パステルグリーン */
+            --glow-blue: rgba(186, 225, 255, 0.6);  /* パステルブルー */
+            --glow-purple: rgba(223, 186, 255, 0.6);
         }
 
         html, body {
@@ -62,7 +64,7 @@
         .blob-1 {
             width: 500px;
             height: 500px;
-            background: radial-gradient(circle, #4ade80, #1d8a4f);
+            background: radial-gradient(circle, #ffb3ba, #ffdfba); /* ピンク〜オレンジ */
             top: -150px;
             left: -150px;
             animation-delay: 0s;
@@ -71,19 +73,20 @@
         .blob-2 {
             width: 450px;
             height: 450px;
-            background: radial-gradient(circle, #60a5fa, #1e40af);
+            background: radial-gradient(circle, #baffc9, #bae1ff); /* グリーン〜ブルー */
             bottom: -120px;
             right: -120px;
             animation-delay: -4s;
         }
 
         .blob-3 {
-            width: 300px;
-            height: 300px;
-            background: radial-gradient(circle, #a78bfa, #5b21b6);
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, #ffffba, #ffb3ba); /* イエロー〜ピンク */
             top: 40%;
-            left: 55%;
-            animation-delay: -8s;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation-delay: -2s;
         }
 
         @keyframes float {
@@ -191,12 +194,12 @@
         }
 
         .card-shiritori::before {
-            background: radial-gradient(ellipse at top, rgba(74, 222, 128, 0.12), transparent 70%);
+            background: radial-gradient(ellipse at top, rgba(186, 255, 201, 0.4), transparent 70%);
         }
 
         .card-shiritori:hover {
-            border-color: rgba(74, 222, 128, 0.5);
-            box-shadow: 0 20px 60px var(--glow-green), 0 0 0 1px rgba(74, 222, 128, 0.15);
+            border-color: rgba(186, 255, 201, 0.8);
+            box-shadow: 0 20px 60px var(--glow-green), 0 0 0 1px rgba(186, 255, 201, 0.4);
         }
 
         /* 究極二択くん — ブルー系 */
@@ -206,12 +209,12 @@
         }
 
         .card-nitaku::before {
-            background: radial-gradient(ellipse at top, rgba(96, 165, 250, 0.12), transparent 70%);
+            background: radial-gradient(ellipse at top, rgba(186, 225, 255, 0.4), transparent 70%);
         }
 
         .card-nitaku:hover {
-            border-color: rgba(96, 165, 250, 0.5);
-            box-shadow: 0 20px 60px var(--glow-blue), 0 0 0 1px rgba(96, 165, 250, 0.15);
+            border-color: rgba(186, 225, 255, 0.8);
+            box-shadow: 0 20px 60px var(--glow-blue), 0 0 0 1px rgba(186, 225, 255, 0.4);
         }
 
         /* ── カードアイコン ── */
@@ -227,13 +230,13 @@
         }
 
         .card-shiritori .card-icon {
-            background: radial-gradient(circle, rgba(74, 222, 128, 0.2), rgba(74, 222, 128, 0.05));
-            box-shadow: 0 0 30px rgba(74, 222, 128, 0.2);
+            background: radial-gradient(circle, rgba(186, 255, 201, 0.6), rgba(186, 255, 201, 0.1));
+            box-shadow: 0 0 30px rgba(186, 255, 201, 0.4);
         }
 
         .card-nitaku .card-icon {
-            background: radial-gradient(circle, rgba(96, 165, 250, 0.2), rgba(96, 165, 250, 0.05));
-            box-shadow: 0 0 30px rgba(96, 165, 250, 0.2);
+            background: radial-gradient(circle, rgba(186, 225, 255, 0.6), rgba(186, 225, 255, 0.1));
+            box-shadow: 0 0 30px rgba(186, 225, 255, 0.4);
         }
 
         .card-icon img {

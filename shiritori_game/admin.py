@@ -1,4 +1,7 @@
 from django.contrib import admin
+from django.contrib.auth.admin import UserAdmin
+from django.contrib.auth.models import User
+from django.utils.translation import gettext_lazy as _
 from .models import GameImage, ImageReading
 
 class ImageReadingInline(admin.TabularInline):
@@ -23,3 +26,25 @@ class ImageReadingAdmin(admin.ModelAdmin):
     list_display = ('id', 'image', 'reading', 'created_at')
     list_filter = ('created_at',)
     search_fields = ('reading', 'image__id')
+
+# --- Userモデルのカスタマイズ ---
+# 「名 (first_name)」のラベルを「ニックネーム」に変更
+User._meta.get_field('first_name').verbose_name = 'ニックネーム'
+
+# デフォルトのUserAdminの登録を解除
+admin.site.unregister(User)
+
+@admin.register(User)
+class CustomUserAdmin(UserAdmin):
+    # 「姓 (last_name)」を表示しないように fieldsets を上書き
+    fieldsets = (
+        (None, {'fields': ('username', 'password')}),
+        (_('Personal info'), {'fields': ('first_name', 'email')}),
+        (_('Permissions'), {
+            'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions'),
+        }),
+        (_('Important dates'), {'fields': ('last_login', 'date_joined')}),
+    )
+    # 一覧表示からも last_name を除外し、first_name に差し替え
+    list_display = ('username', 'email', 'first_name', 'is_staff')
+    search_fields = ('username', 'first_name', 'email')
