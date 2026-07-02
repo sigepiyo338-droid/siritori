@@ -1,5 +1,19 @@
 from django.contrib import admin
-from django.apps import apps
+from .models import Questions, Personalities, Answers, Scores
 
-# nitaku_app は Flask 由来のため Django モデルを持たない
-# 必要に応じてここにカスタム管理画面を追加してください
+@admin.register(Questions)
+class QuestionsAdmin(admin.ModelAdmin):
+    list_display = ('id', 'text', 'option_a', 'option_b', 'author')
+    search_fields = ('text', 'author')
+
+@admin.register(Personalities)
+class PersonalitiesAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name', 'label')
+
+@admin.register(Answers)
+class AnswersAdmin(admin.ModelAdmin):
+    list_display = ('id', 'question', 'choice')
+
+@admin.register(Scores)
+class ScoresAdmin(admin.ModelAdmin):
+    list_display = ('id', 'question', 'personality', 'option', 'count')
