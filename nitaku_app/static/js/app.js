@@ -99,6 +99,18 @@ async function drawRadarChart() {
             document.querySelectorAll('#personality-list input:checked')
         ).map((cb) => parseInt(cb.value, 10));
 
+        const canvasElement = document.getElementById('resultChart');
+        const warningElement = document.getElementById('chart-warning');
+
+        if (checked.length <= 2) {
+            if (canvasElement) canvasElement.style.display = 'none';
+            if (warningElement) warningElement.style.display = 'block';
+            return;
+        } else {
+            if (canvasElement) canvasElement.style.display = 'block';
+            if (warningElement) warningElement.style.display = 'none';
+        }
+
         const res = await fetch(`${API_BASE_URL}radar-scores`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },

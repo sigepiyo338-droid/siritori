@@ -112,7 +112,7 @@ def user_register(request):
     新規ユーザー登録画面の表示と処理を行うビュー
     """
     if request.user.is_authenticated:
-        return redirect('shiritori_game:game_index')
+        return redirect('landing')
 
     if request.method == 'POST':
         form = UserRegistrationForm(request.POST)
@@ -121,7 +121,7 @@ def user_register(request):
             # 登録後、自動でログインする
             auth_login(request, user)
             messages.success(request, f'ようこそ、{user.username}さん！アカウントが作成されました。')
-            return redirect('shiritori_game:game_index')
+            return redirect('landing')
     else:
         form = UserRegistrationForm()
 
@@ -133,13 +133,13 @@ def user_login(request):
     ユーザーログイン画面の表示と処理を行うビュー
     """
     if request.user.is_authenticated:
-        return redirect('shiritori_game:game_index')
+        return redirect('landing')
         
     if request.method == 'POST':
         form = AuthenticationForm(request, data=request.POST)
         if form.is_valid():
             auth_login(request, form.get_user())
-            return redirect('shiritori_game:game_index')
+            return redirect('landing')
     else:
         form = AuthenticationForm()
         
@@ -150,7 +150,7 @@ def user_logout(request):
     ログアウト処理を行い、トップ画面へリダイレクトするビュー
     """
     auth_logout(request)
-    return redirect('shiritori_game:game_index')
+    return redirect('landing')
 
 
 def image_list_api(request):

@@ -1,6 +1,7 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,19 +10,20 @@
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
+
 <body>
 
     <div id="app">
         <section id="menu-page" class="section" style="position: relative;">
-    <h1>究極二択くん</h1>
-    <img src="{% static 'img/2takukun.png' %}" alt="究極二択くん" id="title-image">
-        <p>〜 ヒトの価値観を学習中 〜</p>
+            <h1>究極二択くん</h1>
+            <img src="{% static 'img/2takukun.png' %}" alt="究極二択くん" id="title-image">
+            <p>〜 ヒトの価値観を学習中 〜</p>
             <button id="btn-start" onclick="showSection('personality-page')">2択診断開始！</button>
             <button id="btn-other" onclick="showSection('other-page')">
                 その他
                 <span class="button-subtext">（質問の投稿などが行えます）</span>
             </button>
-    
+
             <a href="{% url 'landing' %}" class="x-link" style="margin-top: 20px;">
                 ⌂ ゲーム選択に戻る
             </a>
@@ -61,7 +63,8 @@
             <h2>その他</h2>
             <button onclick="showSection('question-post-page')">質問投稿</button>
             <button onclick="showSection('personality-post-page')">性格投稿</button>
-            <button onclick="window.open('https://github.com/sigepiyo338-droid/2takukun_web', '_blank', 'noopener,noreferrer')">
+            <button
+                onclick="window.open('https://github.com/sigepiyo338-droid/2takukun_web', '_blank', 'noopener,noreferrer')">
                 GitHub(デベロッパー向け)
             </button>
             <button onclick="showSection('menu-page')" style="background-color: #95a5a6;">戻る</button>
@@ -73,19 +76,23 @@
             <p id="secret-q-author" style="font-size: 0.8rem; color: gray; margin-bottom: 20px;">投稿者:????</p>
 
             <div id="secret-question-block">
-                <button id="secret-btn-a" onclick="selectSecretOption('A')" style="background-color: #e74c3c;">デバッグモード起動</button>
+                <button id="secret-btn-a" onclick="selectSecretOption('A')"
+                    style="background-color: #e74c3c;">デバッグモード起動</button>
                 <p>vs</p>
-                <button id="secret-btn-b" onclick="selectSecretOption('B')" style="background-color: #2ecc71;">暇つぶし</button>
+                <button id="secret-btn-b" onclick="selectSecretOption('B')"
+                    style="background-color: #2ecc71;">暇つぶし</button>
 
                 <hr style="margin: 30px 0 15px 0; border: 0; border-top: 1px solid #eee;">
-                <button onclick="showSection('menu-page')" style="background-color: #95a5a6; font-size: 0.8rem; width: auto; margin: 0 auto; padding: 8px 20px;">
+                <button onclick="showSection('menu-page')"
+                    style="background-color: #95a5a6; font-size: 0.8rem; width: auto; margin: 0 auto; padding: 8px 20px;">
                     診断を中断してメニューに戻る
                 </button>
             </div>
 
             <div id="secret-answer-block" class="hidden">
                 <p id="secret-answer-message" style="font-size: 1.8rem; font-weight: bold; margin-bottom: 16px;"></p>
-                <button onclick="showSection('menu-page')" style="background-color: #95a5a6; width: auto; margin: 0 auto; padding: 8px 20px;">
+                <button onclick="showSection('menu-page')"
+                    style="background-color: #95a5a6; width: auto; margin: 0 auto; padding: 8px 20px;">
                     戻る
                 </button>
             </div>
@@ -100,7 +107,8 @@
                 <label><input type="radio" name="q-count" value="10" checked> 10問</label>
             </div>
 
-            <p style="font-size: 0.8rem;">あなたの性格で当てはまるものにチェック</p>
+            <p style="font-size: 0.8rem; margin-bottom: 5px;">あなたの性格で当てはまるものにチェック</p>
+            <p style="font-size: 0.75rem; color: #007700; margin-bottom: 15px;">※性格を3個以上選択すると結果画面にチャートが表示されます</p>
             <div id="personality-list"></div>
             <button onclick="startDiagnosis()">2択診断開始！</button>
             <button onclick="showSection('menu-page')">決定して戻る</button>
@@ -110,13 +118,14 @@
             <p id="q-number" style="font-weight: bold; color: #3498db;"></p>
             <h2 id="q-text">問題読み込み中...</h2>
             <p id="q-author" style="font-size: 0.8rem; color: gray; margin-bottom: 20px;"></p>
-    
+
             <button id="btn-a" onclick="selectOption('A')" style="background-color: #e74c3c;"></button>
             <p>vs</p>
-         <button id="btn-b" onclick="selectOption('B')" style="background-color: #2ecc71;"></button>
+            <button id="btn-b" onclick="selectOption('B')" style="background-color: #2ecc71;"></button>
 
-         <hr style="margin: 30px 0 15px 0; border: 0; border-top: 1px solid #eee;">
-            <button onclick="showSection('menu-page')" style="background-color: #95a5a6; font-size: 0.8rem; width: auto; margin: 0 auto; padding: 8px 20px;">
+            <hr style="margin: 30px 0 15px 0; border: 0; border-top: 1px solid #eee;">
+            <button onclick="showSection('menu-page')"
+                style="background-color: #95a5a6; font-size: 0.8rem; width: auto; margin: 0 auto; padding: 8px 20px;">
                 診断を中断してメニューに戻る
             </button>
         </section>
@@ -124,23 +133,25 @@
         <section id="result-page" class="section hidden">
             <h2>診断終了！</h2>
             <p id="total-result" style="font-weight: bold; font-size: 1.2rem;"></p>
-            
+
             <button onclick="shareOnX()" style="background-color: #000; color: #fff; margin-bottom: 10px;">
                 𝕏 で結果をシェアする
             </button>
-            
+
             <hr>
             <div style="max-height: 200px; overflow-y: auto; margin-bottom: 20px;">
                 <ul id="result-list" style="text-align: left; font-size: 0.85rem; list-style: none; padding: 0;"></ul>
             </div>
             <canvas id="resultChart"></canvas>
+            <p id="chart-warning" style="display: none; color: #e74c3c; font-weight: bold; margin-bottom: 20px;">
+                性格を3個以上選択するとチャートが表示されます</p>
             <button onclick="showSection('menu-page')">トップに戻る</button>
         </section>
 
 
         <div id="app-meta" aria-label="アプリ情報">
-            <span id="app-version">v1.2.02</span>
-            <span>最終更新: 2026-05-05</span>
+            <span id="app-version">v1.2.3</span>
+            <span>最終更新: 2026-07-02</span>
         </div>
     </div>
     <script>
@@ -148,7 +159,7 @@
         const API_BASE_URL = "{% url 'nitaku_app:index' %}api/";
     </script>
     <script src="{% static 'js/app.js' %}"></script>
-    
+
     <script>
         function getTitleImageByDate(date) {
             const month = date.getMonth() + 1;
@@ -238,4 +249,5 @@
         });
     </script>
 </body>
+
 </html>
