@@ -9,13 +9,13 @@ venv/
 ENV/
 
 # Django関連 (ローカルデータベースやメディアファイルなど)
-# db.sqlite3　一時退避
+db.sqlite3
 db.sqlite3-journal
-# media/　　一時退避
+media/
 staticfiles/
 document/
-# *.db　　一時退避
-# nitaku_app/instance/　　一時退避
+*.db
+nitaku_app/instance/
 
 # 開発用の一時プロファイルやキャッシュ
 temp_profile/
