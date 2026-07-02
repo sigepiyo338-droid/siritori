@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="sigepiyo338が作ったゲームアプリ一覧。しりとり師範くんと究極二択くんが遊べます。">
-    <title>sigepiyo338's Games</title>
+    <title>しげぴよの制作部屋</title>
     <link rel="icon" type="image/png" href="{% static 'img/sigepiyokun128.png' %}">
 
     <!-- Google Fonts -->
@@ -392,7 +392,7 @@
 
         <!-- ヘッダー -->
         <header class="site-header">
-            <p class="eyebrow">sigepiyo338's Games</p>
+            <p class="eyebrow">しげぴよの制作部屋</p>
             <h1>どっちで遊ぶ？</h1>
             <p class="subtitle">好きなゲームを選んでください</p>
         </header>
@@ -422,10 +422,44 @@
 
         </div>
 
+        <!-- ログイン / ユーザー登録 / ログイン状態 -->
+        <div style="display: flex; flex-direction: column; align-items: center; margin-top: 2.5rem; width: 100%; max-width: 500px;">
+            {% if user.is_authenticated %}
+            <div class="app-card"
+                style="padding: 1.5rem; width: 100%; flex-direction: column; align-items: center; gap: 1.2rem; min-height: unset; cursor: default;">
+                <div
+                    style="position: relative; z-index: 10; display: flex; align-items: center; gap: 0.5rem; color: var(--text-primary); font-weight: 600;">
+                    <i class="fa-solid fa-user" style="color: var(--accent-green);"></i> {% if user.profile and user.profile.nickname %}{{ user.profile.nickname }}{% else %}{{ user.username }}{% endif %}さんでログイン中
+                </div>
+                <div style="position: relative; z-index: 10; display: flex; flex-direction: column; align-items: center; gap: 0.8rem; width: 100%;">
+                    <a href="{% url 'shiritori_game:account_settings' %}"
+                        style="color: var(--text-primary); font-size: 0.95rem; font-weight: bold; text-decoration: none; padding: 0.4rem; display: flex; align-items: center; gap: 0.5rem;"><i class="fa-solid fa-user-gear"></i> アカウント設定</a>
+                    <a href="{% url 'shiritori_game:logout' %}"
+                        style="color: var(--accent-purple); font-size: 0.95rem; font-weight: bold; text-decoration: none; padding: 0.4rem; display: flex; align-items: center; gap: 0.5rem;"><i class="fa-solid fa-right-from-bracket"></i> ログアウト</a>
+                </div>
+            </div>
+            {% else %}
+            <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 0.8rem; text-align: center;">
+                ※ユーザー登録なしでも遊べますが、投稿など一部の機能が利用できません。</p>
+            <div style="display: flex; justify-content: center; gap: 1.5rem; width: 100%;">
+                <a class="app-card" href="{% url 'shiritori_game:login' %}"
+                    style="padding: 1rem 1.5rem; flex: 1; flex-direction: row; justify-content: center; align-items: center; min-height: unset; gap: 0.5rem;">
+                    <i class="fa-solid fa-right-to-bracket" style="color: var(--accent-orange); font-size: 1.2rem;"></i>
+                    <p class="card-name" style="margin: 0; font-size: 1.1rem; color: var(--accent-orange);">ログイン</p>
+                </a>
+                <a class="app-card" href="{% url 'shiritori_game:register' %}"
+                    style="padding: 1rem 1.5rem; flex: 1; flex-direction: row; justify-content: center; align-items: center; min-height: unset; gap: 0.5rem;">
+                    <i class="fa-solid fa-user-plus" style="color: var(--accent-purple); font-size: 1.2rem;"></i>
+                    <p class="card-name" style="margin: 0; font-size: 1.1rem; color: var(--accent-purple);">ユーザー登録</p>
+                </a>
+            </div>
+            {% endif %}
+        </div>
+
         <!-- 掲示板 -->
-        <div style="display: flex; justify-content: center; margin-top: 2rem;">
+        <div style="display: flex; justify-content: center; margin-top: 2.5rem; width: 100%;">
             <a class="app-card card-shiritori" href="{% url 'board:board_list' %}"
-                style="width: 100%; max-width: 300px; padding: 1rem 1.5rem; flex-direction: row; justify-content: center; align-items: center; min-height: unset; gap: 0.5rem;">
+                style="width: 100%; max-width: 500px; padding: 1rem 1.5rem; flex-direction: row; justify-content: center; align-items: center; min-height: unset; gap: 0.5rem;">
                 <p class="card-name" style="margin: 0; font-size: 1.1rem; color: var(--card-accent);">簡易掲示板</p>
             </a>
         </div>

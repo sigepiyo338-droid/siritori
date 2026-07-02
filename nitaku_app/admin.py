@@ -3,8 +3,8 @@ from .models import Questions, Personalities, Answers, Scores
 
 @admin.register(Questions)
 class QuestionsAdmin(admin.ModelAdmin):
-    list_display = ('id', 'text', 'option_a', 'option_b', 'author')
-    search_fields = ('text', 'author')
+    list_display = ('id', 'text', 'option_a', 'option_b', 'author', 'posted_by')
+    search_fields = ('text', 'author', 'posted_by')
 
 @admin.register(Personalities)
 class PersonalitiesAdmin(admin.ModelAdmin):

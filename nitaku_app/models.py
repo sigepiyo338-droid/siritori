@@ -34,6 +34,7 @@ class Questions(models.Model):
     option_a = models.CharField(max_length=100)
     option_b = models.CharField(max_length=100)
     author = models.CharField(max_length=50, blank=True, null=True)
+    posted_by = models.CharField(max_length=50, blank=True, null=True)
 
     class Meta:
         managed = False

@@ -218,14 +218,20 @@ def post_management(request):
 @login_required(login_url='shiritori_game:login')
 def account_settings(request):
     """
-    アカウント設定画面を表示し、メールアドレスの変更を処理するビュー
+    アカウント設定画面を表示・アカウントの変更を行うビュー
     """
     user = request.user
+    from .models import UserProfile
+    profile, created = UserProfile.objects.get_or_create(user=user)
+
     if request.method == 'POST':
         email = request.POST.get('email', '').strip()
+        nickname = request.POST.get('nickname', '').strip()
         user.email = email
         user.save()
-        messages.success(request, 'メールアドレスを更新しました。')
+        profile.nickname = nickname if nickname else None
+        profile.save()
+        messages.success(request, '設定を保存しました。')
         return redirect('shiritori_game:account_settings')
         
-    return render(request, 'shiritori_game/account.html')
+    return render(request, 'shiritori_game/account.html', {'profile': profile})

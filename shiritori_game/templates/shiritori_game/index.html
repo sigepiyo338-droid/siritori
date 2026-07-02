@@ -39,15 +39,13 @@
                     <h1>しりとり師範くん</h1>
                     <div class="user-status">
                         {% if user.is_authenticated %}
-                            <span class="user-name"><i class="fa-solid fa-user"></i> {{ user.username }}さん</span>
+                            <span class="user-name"><i class="fa-solid fa-user"></i> {% if user.profile and user.profile.nickname %}{{ user.profile.nickname }}{% else %}{{ user.username }}{% endif %}さん</span>
                             <span class="status-sep">|</span>
                             <a href="{% url 'shiritori_game:my_images' %}" class="auth-link"><i class="fa-solid fa-images"></i> 投稿画像一覧</a>
                             <span class="status-sep">|</span>
                             <a href="{% url 'shiritori_game:logout' %}" class="auth-link"><i class="fa-solid fa-right-from-bracket"></i> ログアウト</a>
-                        {% else %}
-                            <a href="{% url 'shiritori_game:login' %}" class="auth-link"><i class="fa-solid fa-right-to-bracket"></i> ログイン</a>
+                            <span class="status-sep">|</span>
                         {% endif %}
-                        <span class="status-sep">|</span>
                         <a href="{% url 'landing' %}" class="auth-link"><i class="fa-solid fa-house"></i> トップに戻る</a>
                     </div>
                 </div>
@@ -91,12 +89,8 @@
                 <p>画像をつなげてしりとりをするゲームです。つなぎ文字からはじまる画像を選んでね。</p>
                 <div class="menu-actions">
                     <button id="start-game-btn" class="btn btn-primary"><i class="fa-solid fa-play"></i> ゲームを開始</button>
-                    {% if not user.is_authenticated %}
-                        <a href="{% url 'shiritori_game:login' %}" class="btn btn-secondary"><i class="fa-solid fa-right-to-bracket"></i> ログインする</a>
-                    {% endif %}
                     <a href="{% url 'shiritori_game:game_settings' %}" class="btn btn-secondary"><i class="fa-solid fa-sliders"></i> 出題設定</a>
                     <a href="{% url 'shiritori_game:post_management' %}" class="btn btn-secondary"><i class="fa-solid fa-folder-open"></i> 投稿管理</a>
-                    <a href="{% url 'shiritori_game:account_settings' %}" class="btn btn-secondary"><i class="fa-solid fa-user-gear"></i> アカウント設定</a>
                 </div>
             </div>
 
@@ -184,7 +178,7 @@
         </section>
 
         <footer class="app-footer">
-            <p>&copy; 2026 しりとり師範くん <span id="app-version">v1.4.0</span> (<span id="last-updated">最終更新: 2026-07-01</span>).</p>
+            <p>&copy; 2026 しりとり師範くん <span id="app-version">v1.5.0</span> (<span id="last-updated">最終更新: 2026-07-02</span>).</p>
         </footer>
     </div>
 
