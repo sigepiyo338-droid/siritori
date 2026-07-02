@@ -17,6 +17,7 @@ class Answers(models.Model):
 class Personalities(models.Model):
     name = models.CharField(max_length=50)
     label = models.CharField(max_length=50)
+    author = models.CharField(max_length=50, blank=True, null=True)
 
     class Meta:
         managed = False

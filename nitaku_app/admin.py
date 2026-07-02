@@ -8,7 +8,8 @@ class QuestionsAdmin(admin.ModelAdmin):
 
 @admin.register(Personalities)
 class PersonalitiesAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'label')
+    list_display = ('id', 'name', 'label', 'author')
+    search_fields = ('name', 'author')
 
 @admin.register(Answers)
 class AnswersAdmin(admin.ModelAdmin):
