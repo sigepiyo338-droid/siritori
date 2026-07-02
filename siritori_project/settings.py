@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'shiritori_game',
     'nitaku_app',
+    'board_app',
 ]
 
 MIDDLEWARE = [

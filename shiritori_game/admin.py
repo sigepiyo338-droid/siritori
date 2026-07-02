@@ -7,11 +7,11 @@ class ImageReadingInline(admin.TabularInline):
 
 @admin.register(GameImage)
 class GameImageAdmin(admin.ModelAdmin):
-    list_display = ('id', 'image', 'is_approved', 'readings_summary', 'created_at')
+    list_display = ('id', 'image', 'user', 'is_approved', 'readings_summary', 'created_at')
     list_filter = ('is_approved', 'created_at')
     list_editable = ('is_approved',)  # リスト画面から直接承認状態を変更できるようにする
     inlines = [ImageReadingInline]
-    search_fields = ('readings__reading',)
+    search_fields = ('readings__reading', 'user__username')
 
     def readings_summary(self, obj):
         # 紐づく読み方をカンマ区切りで表示するヘルパー

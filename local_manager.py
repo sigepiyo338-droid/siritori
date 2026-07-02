@@ -291,7 +291,7 @@ def open_main_screen_in_app_mode(url: str) -> bool:
 
 def build_ui() -> tk.Tk:
     root = tk.Tk()
-    root.title("しりとり師範くん ローカル管理ツール")
+    root.title("ローカル管理ツール")
     root.geometry("820x450")
     root.resizable(True, True)
     root.minsize(820, 450)
@@ -625,8 +625,8 @@ def build_ui() -> tk.Tk:
         except Exception as e:
             messagebox.showerror("エラー", f"復元失敗: {e}")
 
-    ttk.Button(db_tab, text="バックアップ", command=handle_backup).grid(row=6, column=0, sticky="ew", pady=(0, 8))
-    ttk.Button(db_tab, text="オンライン版で上書き", command=handle_sync).grid(row=7, column=0, sticky="ew", pady=(0, 8))
+    ttk.Button(db_tab, text="オンライン版で上書き", command=handle_sync).grid(row=6, column=0, sticky="ew", pady=(0, 8))
+    ttk.Button(db_tab, text="バックアップ", command=handle_backup).grid(row=7, column=0, sticky="ew", pady=(0, 8))
     ttk.Button(db_tab, text="ローカル版で復元", command=handle_restore).grid(row=8, column=0, sticky="ew", pady=(0, 16))
 
     shiritori_status_var = tk.StringVar()

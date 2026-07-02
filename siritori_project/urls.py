@@ -25,6 +25,7 @@ urlpatterns = [
     path('', views.landing, name='landing'),
     path('shiritori/', include('shiritori_game.urls')),
     path('twotakukun/', include('nitaku_app.urls')),
+    path('board/', include('board_app.urls')),
 ]
 
 if settings.DEBUG:
