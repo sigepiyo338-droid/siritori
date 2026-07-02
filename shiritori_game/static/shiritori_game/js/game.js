@@ -83,18 +83,27 @@ document.addEventListener('DOMContentLoaded', () => {
     // 初期データのロード
     async function loadGameData() {
         try {
-            const response = await fetch(window.SHIRITORI_API_BASE || '/shiritori/api/images/');
+            // フィルター設定を取得
+            const filterScope = localStorage.getItem('shiritori_filter_scope') || 'all';
+            let filterTypes = 'approved,others';
+            try {
+                if (localStorage.getItem('shiritori_filter_types')) {
+                    filterTypes = JSON.parse(localStorage.getItem('shiritori_filter_types')).join(',');
+                }
+            } catch(e) {}
+
+            let apiUrl = window.SHIRITORI_API_BASE || '/shiritori/api/images/';
+            const params = new URLSearchParams();
+            params.append('scope', filterScope);
+            if (filterScope === 'partial') {
+                params.append('types', filterTypes);
+            }
+            
+            const response = await fetch(`${apiUrl}?${params.toString()}`);
             if (!response.ok) {
                 throw new Error('APIデータの取得に失敗しました');
             }
             allImages = await response.json();
-            
-            // 設定に従ってユーザー自身の画像のみにフィルタリング
-            const filterOnlyMy = localStorage.getItem('shiritori_filter_only_my') === 'true';
-            if (filterOnlyMy && window.SHIRITORI_USER_ID) {
-                const currentUserId = parseInt(window.SHIRITORI_USER_ID, 10);
-                allImages = allImages.filter(img => img.user_id === currentUserId);
-            }
             
             // 画像の差し替え（キャッシュ）対策としてURLにキャッシュバスターを付与
             const cacheBuster = Date.now();
@@ -105,11 +114,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             
             if (allImages.length === 0) {
-                if (filterOnlyMy && window.SHIRITORI_USER_ID) {
-                    showError('あなたが投稿した承認済みの画像が登録されていません。画像を投稿するか、出題設定ですべての画像を出題対象に設定してください。');
-                } else {
-                    showError('ゲーム用の承認済み画像が登録されていません。管理画面から画像を登録し、is_approvedをTrueにしてください。');
-                }
+                showError('条件に一致する画像が登録されていません。画像を投稿するか、出題設定を変更してください。');
                 return;
             }
             
