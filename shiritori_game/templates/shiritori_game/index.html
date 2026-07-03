@@ -81,7 +81,6 @@
                     {% endfor %}
                 </div>
             {% endif %}
-
             <!-- トップメニュー画面 -->
             <div id="game-menu" class="game-card menu-card">
                 <i class="fa-solid fa-gamepad status-icon" style="color: var(--accent-blue); filter: drop-shadow(0 0 15px rgba(56, 189, 248, 0.4)); margin-bottom: 1rem;"></i>
@@ -92,6 +91,14 @@
                     <a href="{% url 'shiritori_game:game_settings' %}" class="btn btn-secondary"><i class="fa-solid fa-sliders"></i> 出題設定</a>
                     <a href="{% url 'shiritori_game:post_management' %}" class="btn btn-secondary"><i class="fa-solid fa-folder-open"></i> 投稿管理</a>
                 </div>
+
+                <!-- 不足文字アピールメッセージ -->
+                {% if needed_start and needed_end %}
+                <div class="info-message" style="background: rgba(255, 255, 255, 0.7); border: 1px solid var(--accent-blue); padding: 0.8rem 1.2rem; border-radius: 12px; margin-top: 1.5rem; text-align: center; color: var(--text-primary); font-size: 0.95rem; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+                    <i class="fa-solid fa-circle-info" style="color: var(--accent-blue); margin-right: 0.4rem;"></i>
+                    現在「<strong style="color: var(--accent-purple); font-size: 1.1em;">{{ needed_start }}</strong>」から始まる画像や「<strong style="color: var(--accent-purple); font-size: 1.1em;">{{ needed_end }}</strong>」で終わる画像を募集中です！
+                </div>
+                {% endif %}
             </div>
 
             <!-- ゲーム開始前のローディングまたはデータ確認 -->
@@ -196,7 +203,7 @@
         </section>
 
         <footer class="app-footer">
-            <p>&copy; 2026 しりとり師範くん <span id="app-version">v1.8.0</span> (<span id="last-updated">最終更新: 2026-07-03</span>).</p>
+            <p>&copy; 2026 しりとり師範くん <span id="app-version">v1.9.0</span> (<span id="last-updated">最終更新: 2026-07-03</span>).</p>
         </footer>
     </div>
 

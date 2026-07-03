@@ -101,11 +101,66 @@ def delete_image(request, image_id):
 
 
 
+def get_least_used_characters():
+    import random
+    from .models import ImageReading
+    HIRAGANA = list("あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわ")
+    
+    small_to_large = {
+        'ぁ': 'あ', 'ぃ': 'い', 'ぅ': 'う', 'ぇ': 'え', 'ぉ': 'お',
+        'っ': 'つ', 'ゃ': 'や', 'ゅ': 'ゆ', 'ょ': 'よ', 'ゎ': 'わ'
+    }
+    voiced_to_clear = {
+        'が': 'か', 'ぎ': 'き', 'ぐ': 'く', 'げ': 'け', 'ご': 'こ',
+        'ざ': 'さ', 'じ': 'し', 'ず': 'す', 'ぜ': 'せ', 'ぞ': 'そ',
+        'だ': 'た', 'ぢ': 'ち', 'づ': 'つ', 'で': 'て', 'ど': 'と',
+        'ば': 'は', 'び': 'ひ', 'ぶ': 'ふ', 'べ': 'へ', 'ぼ': 'ほ',
+        'ぱ': 'は', 'ぴ': 'ひ', 'ぷ': 'ふ', 'ぺ': 'へ', 'ぽ': 'ほ'
+    }
+
+    def normalize(char):
+        if not char: return ''
+        c = small_to_large.get(char, char)
+        c = voiced_to_clear.get(c, c)
+        return c
+
+    readings = ImageReading.objects.filter(image__is_approved=True).values_list('reading', flat=True)
+    
+    start_counts = {char: 0 for char in HIRAGANA}
+    end_counts = {char: 0 for char in HIRAGANA}
+    
+    for r in readings:
+        if not r: continue
+        
+        first_char = normalize(r[0])
+        if first_char in start_counts:
+            start_counts[first_char] += 1
+            
+        last_char = r[-1]
+        if last_char == 'ー' and len(r) > 1:
+            last_char = r[-2]
+            
+        last_char = normalize(last_char)
+        if last_char in end_counts:
+            end_counts[last_char] += 1
+            
+    min_start_count = min(start_counts.values()) if start_counts else 0
+    min_end_count = min(end_counts.values()) if end_counts else 0
+    
+    least_starts = [char for char, count in start_counts.items() if count == min_start_count]
+    least_ends = [char for char, count in end_counts.items() if count == min_end_count]
+    
+    return random.choice(least_starts) if least_starts else 'あ', random.choice(least_ends) if least_ends else 'あ'
+
 def game_index(request):
     """
     ゲーム本体のHTMLページを表示するビュー
     """
-    return render(request, 'shiritori_game/index.html')
+    needed_start, needed_end = get_least_used_characters()
+    return render(request, 'shiritori_game/index.html', {
+        'needed_start': needed_start,
+        'needed_end': needed_end
+    })
 
 def user_register(request):
     """
