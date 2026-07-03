@@ -26,6 +26,7 @@ urlpatterns = [
     path('shiritori/', include('shiritori_game.urls')),
     path('twotakukun/', include('nitaku_app.urls')),
     path('board/', include('board_app.urls')),
+    path('accounts/', include('django.contrib.auth.urls')),
 ]
 
 if settings.DEBUG:
