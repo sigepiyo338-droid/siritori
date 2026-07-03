@@ -19,7 +19,11 @@
             <img src="{% static 'img/2takukun.png' %}" alt="究極二択くん" id="title-image">
             <p>〜 ヒトの価値観を学習中 〜</p>
             <button id="btn-start" onclick="showSection('personality-page')">2択診断開始！</button>
+            {% if user.is_authenticated %}
             <button id="btn-post-management" onclick="showSection('post-management-page')">投稿管理</button>
+            {% else %}
+            <button id="btn-post-management" onclick="window.location.href='{% url 'shiritori_game:login' %}?next={% url 'nitaku_app:index' %}'">投稿管理（要ログイン）</button>
+            {% endif %}
             <button id="btn-other" onclick="showSection('other-page')">
                 その他
             </button>
