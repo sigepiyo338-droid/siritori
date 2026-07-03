@@ -84,7 +84,8 @@
                         </label>
                         <input type="text" id="nickname" name="nickname" value="{{ profile.nickname|default:'' }}"
                             placeholder="表示名を入力してください"
-                            style="width: 100%; padding: 0.9rem 1.25rem; background: rgba(255, 255, 255, 0.6); border: 1px solid var(--card-border); border-radius: 12px; color: var(--text-primary); font-size: 1rem;">
+                            style="width: 100%; padding: 0.9rem 1.25rem; background: rgba(255, 255, 255, 0.6); border: 1px solid var(--card-border); border-radius: 12px; color: var(--text-primary); font-size: 1rem;"
+                            {% if user.username == 'guest' %}disabled{% endif %}>
                     </div>
 
                     <div class="form-group" style="margin-bottom: 1.5rem;">
@@ -94,13 +95,22 @@
                         </label>
                         <input type="email" id="email" name="email" value="{{ user.email }}"
                             placeholder="example@email.com"
-                            style="width: 100%; padding: 0.9rem 1.25rem; background: rgba(255, 255, 255, 0.6); border: 1px solid var(--card-border); border-radius: 12px; color: var(--text-primary); font-size: 1rem;">
+                            style="width: 100%; padding: 0.9rem 1.25rem; background: rgba(255, 255, 255, 0.6); border: 1px solid var(--card-border); border-radius: 12px; color: var(--text-primary); font-size: 1rem;"
+                            {% if user.username == 'guest' %}disabled{% endif %}>
                     </div>
 
+                    {% if user.username == 'guest' %}
+                    <p style="color: var(--accent-red); font-size: 0.85rem; text-align: center; margin-bottom: 1rem;">guestアカウントの登録情報は変更できません。</p>
+                    <button type="button" class="btn btn-primary"
+                        style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.5rem; opacity: 0.5; cursor: not-allowed;" disabled>
+                        <i class="fa-solid fa-floppy-disk"></i> 設定を保存
+                    </button>
+                    {% else %}
                     <button type="submit" class="btn btn-primary"
                         style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
                         <i class="fa-solid fa-floppy-disk"></i> 設定を保存
                     </button>
+                    {% endif %}
                 </form>
 
                 <div

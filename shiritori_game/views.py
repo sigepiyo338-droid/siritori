@@ -212,6 +212,10 @@ def account_settings(request):
     profile, created = UserProfile.objects.get_or_create(user=user)
 
     if request.method == 'POST':
+        if user.username == 'guest':
+            messages.error(request, 'guestアカウントの登録情報は変更できません。')
+            return redirect('shiritori_game:account_settings')
+            
         email = request.POST.get('email', '').strip()
         nickname = request.POST.get('nickname', '').strip()
         user.email = email
