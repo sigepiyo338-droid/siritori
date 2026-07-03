@@ -160,8 +160,15 @@ document.addEventListener('DOMContentLoaded', () => {
         historySection.classList.remove('hidden');
 
         // 最初のお題をセット（ランダム）
-        const startIndex = Math.floor(Math.random() * allImages.length);
-        const startImg = allImages[startIndex];
+        // 1問目は「ん」で終わらない画像を優先する
+        const validStartImages = allImages.filter(img => {
+            const firstReading = img.readings[0];
+            return firstReading && firstReading.slice(-1) !== 'ん';
+        });
+
+        const candidateImages = validStartImages.length > 0 ? validStartImages : allImages;
+        const startIndex = Math.floor(Math.random() * candidateImages.length);
+        const startImg = candidateImages[startIndex];
         
         setNewQuestion(startImg, startImg.readings[0]);
     }
