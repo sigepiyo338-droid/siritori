@@ -63,14 +63,17 @@
                         <div
                             style="font-size: 1.1rem; font-weight: 700; color: var(--text-primary); margin-top: 0.25rem;">
                             <i class="fa-solid fa-user" style="color: var(--accent-purple); margin-right: 0.35rem;"></i>
-                            {% if profile.nickname %}{{ profile.nickname }} <span style="font-size: 0.8rem; font-weight: normal; color: var(--text-secondary);">(@{{ user.username }})</span>{% else %}{{ user.username }}{% endif %}
+                            {% if profile.nickname %}{{ profile.nickname }} <span
+                                style="font-size: 0.8rem; font-weight: normal; color: var(--text-secondary);">(@{{
+                                user.username }})</span>{% else %}{{ user.username }}{% endif %}
                         </div>
                     </div>
                     <div>
                         <span style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600;">登録日:</span>
                         <div style="font-size: 0.95rem; color: var(--text-primary); margin-top: 0.25rem;">
                             <i class="fa-solid fa-calendar-day"
-                                style="color: var(--accent-blue); margin-right: 0.35rem;"></i> {{ user.date_joined|date:"Y年m月d日 H:i" }}
+                                style="color: var(--accent-blue); margin-right: 0.35rem;"></i> {{
+                            user.date_joined|date:"Y年m月d日 H:i" }}
                         </div>
                     </div>
                 </div>
@@ -91,7 +94,7 @@
                     <div class="form-group" style="margin-bottom: 1.5rem;">
                         <label for="email"
                             style="display: block; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.5rem; font-weight: 600;">
-                            メールアドレス
+                            メールアドレス(省略可・パスワードリセットにのみ使用)
                         </label>
                         <input type="email" id="email" name="email" value="{{ user.email }}"
                             placeholder="example@email.com"
