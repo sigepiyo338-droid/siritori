@@ -76,6 +76,20 @@
                     </button>
                 </form>
                 
+                <div style="position: relative; text-align: center; margin: 1.5rem 0;">
+                    <div style="position: absolute; top: 50%; left: 0; right: 0; height: 1px; background: var(--card-border);"></div>
+                    <span style="position: relative; background: var(--card-bg); padding: 0 10px; font-size: 0.8rem; color: var(--text-secondary); font-weight: 600;">または</span>
+                </div>
+
+                <form method="post" action="" style="text-align: left;">
+                    {% csrf_token %}
+                    <input type="hidden" name="username" value="guest">
+                    <input type="hidden" name="password" value="gue260703">
+                    <button type="submit" class="btn" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.5rem; background: rgba(52, 211, 153, 0.15); color: var(--accent-green); border: 2px solid var(--accent-green); padding: 0.75rem 1.5rem; border-radius: 12px; font-weight: 700; font-size: 1rem; transition: all 0.2s ease; cursor: pointer;">
+                        <i class="fa-solid fa-user-astronaut"></i> ゲストとしてログイン
+                    </button>
+                </form>
+                
                 <div style="margin-top: 2rem; border-top: 1px solid var(--card-border); padding-top: 1.5rem; text-align: center;">
                     <p style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 1rem;">アカウントをお持ちでない方</p>
                     <a href="{% url 'shiritori_game:register' %}" class="btn" style="display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; background: rgba(255,255,255,0.08); border: 1px solid var(--card-border); color: var(--text-primary); text-decoration: none; padding: 0.65rem 1.5rem; border-radius: 12px; font-weight: 600; font-size: 0.9rem; transition: all 0.2s ease; width: 100%;">
