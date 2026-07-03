@@ -10,7 +10,7 @@ class ImageReadingInline(admin.TabularInline):
 
 @admin.register(GameImage)
 class GameImageAdmin(admin.ModelAdmin):
-    list_display = ('id', 'image', 'user', 'is_approved', 'readings_summary', 'created_at')
+    list_display = ('id', 'image', 'user', 'is_approved', 'readings_summary', 'created_at', 'remarks')
     list_filter = ('is_approved', 'created_at')
     list_editable = ('is_approved',)  # リスト画面から直接承認状態を変更できるようにする
     inlines = [ImageReadingInline]

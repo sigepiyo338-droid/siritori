@@ -19,9 +19,9 @@
             <img src="{% static 'img/2takukun.png' %}" alt="究極二択くん" id="title-image">
             <p>〜 ヒトの価値観を学習中 〜</p>
             <button id="btn-start" onclick="showSection('personality-page')">2択診断開始！</button>
+            <button id="btn-post-management" onclick="showSection('post-management-page')">投稿管理</button>
             <button id="btn-other" onclick="showSection('other-page')">
                 その他
-                <span class="button-subtext">（質問の投稿などが行えます）</span>
             </button>
 
             <a href="{% url 'landing' %}" class="x-link" style="margin-top: 20px;">
@@ -44,7 +44,7 @@
                 <input type="text" id="new-q-author" placeholder="あなたの名前">
                 <button onclick="submitPost()">問題を登録</button>
             </div>
-            <button onclick="showSection('other-page')" style="background-color: #95a5a6;">戻る</button>
+            <button onclick="showSection('post-management-page')" style="background-color: #95a5a6;">戻る</button>
         </section>
 
         <section id="personality-post-page" class="section hidden">
@@ -56,13 +56,18 @@
                 <input type="text" id="user-p-label" placeholder="表示ラベル">
                 <button onclick="addUserPersonality()" style="background-color: #27ae60;">性格を追加</button>
             </div>
-            <button onclick="showSection('other-page')" style="background-color: #95a5a6;">戻る</button>
+            <button onclick="showSection('post-management-page')" style="background-color: #95a5a6;">戻る</button>
+        </section>
+
+        <section id="post-management-page" class="section hidden">
+            <h2>投稿管理</h2>
+            <button onclick="showSection('question-post-page')">質問投稿</button>
+            <button onclick="showSection('personality-post-page')">性格投稿</button>
+            <button onclick="showSection('menu-page')" style="background-color: #95a5a6;">戻る</button>
         </section>
 
         <section id="other-page" class="section hidden">
             <h2>その他</h2>
-            <button onclick="showSection('question-post-page')">質問投稿</button>
-            <button onclick="showSection('personality-post-page')">性格投稿</button>
             <button
                 onclick="window.open('https://github.com/sigepiyo338-droid/2takukun_web', '_blank', 'noopener,noreferrer')">
                 GitHub(デベロッパー向け)

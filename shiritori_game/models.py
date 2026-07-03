@@ -57,6 +57,11 @@ class GameImage(models.Model):
         auto_now=True,
         verbose_name='更新日時'
     )
+    remarks = models.TextField(
+        blank=True,
+        null=True,
+        verbose_name='備考'
+    )
 
     class Meta:
         verbose_name = 'ゲーム画像'

@@ -37,6 +37,8 @@ class UserRegistrationForm(UserCreationForm):
         })
 
 class ImageUploadForm(forms.ModelForm):
+    field_order = ['image', 'reading', 'remarks']
+    
     reading = forms.CharField(
         label='読み方（ひらがな）',
         max_length=100,
@@ -72,4 +74,10 @@ class ImageUploadForm(forms.ModelForm):
 
     class Meta:
         model = GameImage
-        fields = ['image']
+        fields = ['image', 'remarks']
+        widgets = {
+            'remarks': forms.Textarea(attrs={
+                'placeholder': '画像の出典や補足情報などがあればご記入ください（任意）',
+                'rows': 3,
+            })
+        }
