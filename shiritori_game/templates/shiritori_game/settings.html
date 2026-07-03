@@ -76,46 +76,13 @@
                     <div class="form-group" style="margin-bottom: 2rem;">
                         <label
                             style="display: block; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.75rem; font-weight: 600;">
-                            出題される画像の対象範囲
+                            出題設定
                         </label>
-                        <div style="display: flex; flex-direction: row; gap: 1.5rem;">
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem; align-items: flex-start;">
                             <label
                                 style="display: inline-flex; align-items: center; gap: 0.25rem; cursor: pointer; font-size: 0.95rem;">
-                                <input type="radio" name="filter-scope" value="all" checked> すべて(承認済のみ)
+                                <input type="checkbox" name="include-unapproved-others" value="true"> 他人の未承認画像も出題する
                             </label>
-                            <label
-                                style="display: inline-flex; align-items: center; gap: 0.25rem; cursor: pointer; font-size: 0.95rem;">
-                                <input type="radio" name="filter-scope" value="partial"> 選択
-                            </label>
-                        </div>
-
-                        <!-- 詳細設定 (一部選択時のみ表示) -->
-                        <div id="partial-options"
-                            style="margin-top: 1rem; display: none; flex-direction: column; gap: 0.5rem; align-items: flex-start;">
-                            <label
-                                style="display: inline-flex; align-items: center; gap: 0.25rem; cursor: pointer; font-size: 0.9rem;">
-                                <input type="checkbox" name="filter-type" value="approved" checked> 承認済み画像
-                            </label>
-                            <label
-                                style="display: inline-flex; align-items: center; gap: 0.25rem; cursor: pointer; font-size: 0.9rem;">
-                                <input type="checkbox" name="filter-type" value="unapproved"> 未承認画像
-                            </label>
-                            <label
-                                style="display: inline-flex; align-items: center; gap: 0.25rem; cursor: pointer; font-size: 0.9rem;">
-                                <input type="checkbox" name="filter-type" value="others" checked> 他人の画像
-                            </label>
-                            {% if user.is_authenticated %}
-                            <label
-                                style="display: inline-flex; align-items: center; gap: 0.25rem; cursor: pointer; font-size: 0.9rem;">
-                                <input type="checkbox" name="filter-type" value="mine" checked> 自分の画像
-                            </label>
-                            {% else %}
-                            <label
-                                style="display: inline-flex; align-items: center; gap: 0.25rem; color: var(--text-secondary); font-size: 0.9rem;"
-                                title="ログインすると選択可能になります。">
-                                <input type="checkbox" name="filter-type" value="mine" disabled> 自分の画像 (要ログイン)
-                            </label>
-                            {% endif %}
                         </div>
                     </div>
 
@@ -149,58 +116,26 @@
 
             // 既存の設定を読み込んでフォームにセット
             const currentLives = localStorage.getItem('shiritori_max_lives') || '3';
-            const currentScope = localStorage.getItem('shiritori_filter_scope') || 'all';
-            let currentTypes = ['approved', 'others'];
-            try {
-                if (localStorage.getItem('shiritori_filter_types')) {
-                    currentTypes = JSON.parse(localStorage.getItem('shiritori_filter_types'));
-                }
-            } catch (e) { }
+            const includeUnapproved = localStorage.getItem('shiritori_include_unapproved') === 'true';
 
             const livesInput = form.querySelector(`input[name="max-lives"][value="${currentLives}"]`);
             if (livesInput) livesInput.checked = true;
 
-            const scopeInput = form.querySelector(`input[name="filter-scope"][value="${currentScope}"]`);
-            if (scopeInput) scopeInput.checked = true;
-
-            const partialOptions = document.getElementById('partial-options');
-
-            // チェックボックスの状態をセット
-            const typeCheckboxes = form.querySelectorAll('input[name="filter-type"]');
-            typeCheckboxes.forEach(cb => {
-                if (!cb.disabled) {
-                    cb.checked = currentTypes.includes(cb.value);
-                }
-            });
-
-            // 表示の切り替え関数
-            const togglePartialOptions = () => {
-                const selectedScope = form.querySelector('input[name="filter-scope"]:checked').value;
-                partialOptions.style.display = selectedScope === 'partial' ? 'flex' : 'none';
-            };
-
-            // ラジオボタンの変更イベントにバインド
-            form.querySelectorAll('input[name="filter-scope"]').forEach(radio => {
-                radio.addEventListener('change', togglePartialOptions);
-            });
-
-            // 初期表示
-            togglePartialOptions();
+            const includeUnapprovedInput = form.querySelector('input[name="include-unapproved-others"]');
+            if (includeUnapprovedInput) includeUnapprovedInput.checked = includeUnapproved;
 
             form.addEventListener('submit', (e) => {
                 e.preventDefault();
 
                 const selectedLives = form.querySelector('input[name="max-lives"]:checked').value;
-                const selectedScope = form.querySelector('input[name="filter-scope"]:checked').value;
-
-                const selectedTypes = Array.from(form.querySelectorAll('input[name="filter-type"]:checked'))
-                    .map(cb => cb.value);
+                const isIncludeUnapproved = form.querySelector('input[name="include-unapproved-others"]').checked;
 
                 localStorage.setItem('shiritori_max_lives', selectedLives);
-                localStorage.setItem('shiritori_filter_scope', selectedScope);
-                localStorage.setItem('shiritori_filter_types', JSON.stringify(selectedTypes));
+                localStorage.setItem('shiritori_include_unapproved', isIncludeUnapproved);
 
                 // 後方互換性のため古いキーも削除
+                localStorage.removeItem('shiritori_filter_scope');
+                localStorage.removeItem('shiritori_filter_types');
                 localStorage.removeItem('shiritori_filter_only_my');
 
                 successMsg.classList.remove('hidden');

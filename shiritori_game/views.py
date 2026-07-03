@@ -157,31 +157,17 @@ def image_list_api(request):
     """
     設定に基づく画像としりとり用読み方のリストをJSON形式で返すAPI
     """
-    scope = request.GET.get('scope', 'all')
-    types_str = request.GET.get('types', '')
-    types = types_str.split(',') if types_str else []
+    include_unapproved_others = request.GET.get('include_unapproved_others', 'false') == 'true'
 
-    query = Q()
-    if scope == 'partial' and types:
-        # 「一部」の場合は、選択された条件をORで結合（和集合）
-        if 'approved' in types:
-            query |= Q(is_approved=True)
-        if 'unapproved' in types:
-            query |= Q(is_approved=False)
-        if 'mine' in types and request.user.is_authenticated:
-            query |= Q(user=request.user)
-        if 'others' in types:
-            if request.user.is_authenticated:
-                query |= ~Q(user=request.user)
-            else:
-                # 未ログインの場合、他人の画像はシステム上の全画像を指す
-                query |= Q(user__isnull=False) | Q(user__isnull=True)
-    elif scope == 'all':
-        # 「すべて(承認済)」の場合は承認済みの画像を対象とする
-        query = Q(is_approved=True)
+    if include_unapproved_others:
+        # 他人の未承認画像も含むすべての画像が対象
+        query = Q()
     else:
-        # 古い仕様や不正なアクセス時のフォールバック（承認済みのみ）
-        query = Q(is_approved=True)
+        # すべての承認済み画像と自分が投稿した未承認画像が出題の対象
+        if request.user.is_authenticated:
+            query = Q(is_approved=True) | Q(user=request.user)
+        else:
+            query = Q(is_approved=True)
 
     # フィルタを適用して画像を取得（重複を避けるためにdistinct）
     images = GameImage.objects.filter(query).prefetch_related('readings').distinct()

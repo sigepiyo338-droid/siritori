@@ -84,19 +84,12 @@ document.addEventListener('DOMContentLoaded', () => {
     async function loadGameData() {
         try {
             // フィルター設定を取得
-            const filterScope = localStorage.getItem('shiritori_filter_scope') || 'all';
-            let filterTypes = 'approved,others';
-            try {
-                if (localStorage.getItem('shiritori_filter_types')) {
-                    filterTypes = JSON.parse(localStorage.getItem('shiritori_filter_types')).join(',');
-                }
-            } catch(e) {}
+            const includeUnapproved = localStorage.getItem('shiritori_include_unapproved') === 'true';
 
             let apiUrl = window.SHIRITORI_API_BASE || '/shiritori/api/images/';
             const params = new URLSearchParams();
-            params.append('scope', filterScope);
-            if (filterScope === 'partial') {
-                params.append('types', filterTypes);
+            if (includeUnapproved) {
+                params.append('include_unapproved_others', 'true');
             }
             
             const response = await fetch(`${apiUrl}?${params.toString()}`);
