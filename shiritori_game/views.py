@@ -170,17 +170,25 @@ def image_list_api(request):
             query = Q(is_approved=True)
 
     # フィルタを適用して画像を取得（重複を避けるためにdistinct）
-    images = GameImage.objects.filter(query).prefetch_related('readings').distinct()
+    images = GameImage.objects.filter(query).select_related('user', 'user__profile').prefetch_related('readings').distinct()
     
     data = []
     for img in images:
         # 画像ファイルが存在する場合のみリストに含める
         if img.image:
+            submitter_name = "名無し"
+            if img.user:
+                if hasattr(img.user, 'profile') and img.user.profile.nickname:
+                    submitter_name = img.user.profile.nickname
+                else:
+                    submitter_name = img.user.username
+
             data.append({
                 'id': img.id,
                 'image_url': img.image.url,
                 'readings': [r.reading for r in img.readings.all()],
                 'user_id': img.user_id,
+                'submitter_name': submitter_name,
                 'remarks': img.remarks,
             })
             

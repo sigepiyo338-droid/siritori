@@ -318,6 +318,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const overlay = document.getElementById('popup-overlay');
         const popupImg = document.getElementById('popup-image');
         const popupReading = document.getElementById('popup-reading');
+        const popupSubmitter = document.getElementById('popup-submitter');
         const popupRemarks = document.getElementById('popup-remarks');
         const popupOkBtn = document.getElementById('popup-ok-btn');
 
@@ -329,6 +330,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         popupImg.src = imgData.image_url;
         popupReading.textContent = reading;
+        if (popupSubmitter && imgData.submitter_name) {
+            popupSubmitter.textContent = "投稿者: " + imgData.submitter_name + " さん";
+        } else if (popupSubmitter) {
+            popupSubmitter.textContent = "";
+        }
         
         if (imgData.remarks) {
             popupRemarks.textContent = imgData.remarks;
