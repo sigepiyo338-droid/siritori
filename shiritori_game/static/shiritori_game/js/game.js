@@ -279,8 +279,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // 次のお題に進む
-            setNewQuestion(correctChoice, correctReading);
+            // 正解ポップアップを表示
+            showCorrectAnswerPopup(correctChoice, correctReading);
         } else {
             // 不正解（お手つき）の場合
             combo = 0;
@@ -303,6 +303,45 @@ document.addEventListener('DOMContentLoaded', () => {
                 }, 300);
             }
         }
+    }
+
+    // 正解ポップアップの表示と次の問題への進行
+    function showCorrectAnswerPopup(imgData, reading) {
+        const popup = document.getElementById('correct-answer-popup');
+        const overlay = document.getElementById('popup-overlay');
+        const popupImg = document.getElementById('popup-image');
+        const popupReading = document.getElementById('popup-reading');
+        const popupRemarks = document.getElementById('popup-remarks');
+        const popupOkBtn = document.getElementById('popup-ok-btn');
+
+        if (!popup) {
+            // もしポップアップ要素がなければそのまま次へ進む
+            setNewQuestion(imgData, reading);
+            return;
+        }
+
+        popupImg.src = imgData.image_url;
+        popupReading.textContent = reading;
+        
+        if (imgData.remarks) {
+            popupRemarks.textContent = imgData.remarks;
+            popupRemarks.style.display = 'block';
+        } else {
+            popupRemarks.textContent = '';
+            popupRemarks.style.display = 'none';
+        }
+
+        popup.classList.remove('hidden');
+        overlay.classList.remove('hidden');
+
+        const handleOkClick = () => {
+            popup.classList.add('hidden');
+            overlay.classList.add('hidden');
+            popupOkBtn.removeEventListener('click', handleOkClick);
+            setNewQuestion(imgData, reading);
+        };
+        
+        popupOkBtn.addEventListener('click', handleOkClick);
     }
 
     // 履歴アイテムの作成

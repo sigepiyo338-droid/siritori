@@ -167,6 +167,23 @@
                     <button id="game-clear-home-btn" class="btn btn-secondary"><i class="fa-solid fa-house"></i> トップに戻る</button>
                 </div>
             </div>
+
+            <!-- 正解ポップアップ画面 -->
+            <div id="correct-answer-popup" class="game-card status-card hidden" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1000; box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 90%; max-width: 400px; text-align: center;">
+                <i class="fa-solid fa-circle-check status-icon success" style="margin-bottom: 0.5rem;"></i>
+                <h2 style="color: var(--accent-green); margin-bottom: 1rem;">正解！</h2>
+                <div class="image-wrapper" style="margin: 0 auto 1rem auto; text-align: center;">
+                    <img id="popup-image" src="" alt="正解の画像" style="max-height: 180px; width: auto; border-radius: 8px; object-fit: contain;">
+                </div>
+                <div class="reading-hint" id="popup-reading" style="font-size: 1.4rem; font-weight: bold; margin-bottom: 2rem; color: var(--text-primary);"></div>
+                <div id="popup-remarks" style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1.5rem; white-space: pre-wrap; padding: 0 1rem;"></div>
+                <div class="status-actions" style="display: flex; justify-content: center;">
+                    <button id="popup-ok-btn" class="btn btn-primary" style="width: 100%;">OK</button>
+                </div>
+            </div>
+            
+            <!-- ポップアップ背景（オーバーレイ） -->
+            <div id="popup-overlay" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999; backdrop-filter: blur(3px);"></div>
         </main>
 
         <!-- 履歴エリア -->
@@ -178,11 +195,11 @@
         </section>
 
         <footer class="app-footer">
-            <p>&copy; 2026 しりとり師範くん <span id="app-version">v1.6.0</span> (<span id="last-updated">最終更新: 2026-07-03</span>).</p>
+            <p>&copy; 2026 しりとり師範くん <span id="app-version">v1.6.1</span> (<span id="last-updated">最終更新: 2026-07-03</span>).</p>
         </footer>
     </div>
 
     <!-- Script -->
-    <script src="{% static 'shiritori_game/js/game.js' %}"></script>
+    <script src="{% static 'shiritori_game/js/game.js' %}?v=20260703"></script>
 </body>
 </html>

@@ -181,6 +181,7 @@ def image_list_api(request):
                 'image_url': img.image.url,
                 'readings': [r.reading for r in img.readings.all()],
                 'user_id': img.user_id,
+                'remarks': img.remarks,
             })
             
     return JsonResponse(data, safe=False, json_dumps_params={'ensure_ascii': False})
