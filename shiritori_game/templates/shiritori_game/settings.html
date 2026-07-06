@@ -113,6 +113,10 @@
                                 style="display: inline-flex; align-items: center; gap: 0.25rem; cursor: pointer; font-size: 0.95rem;">
                                 <input type="checkbox" name="include-unapproved-others" value="true"> 他人の未承認画像も出題する
                             </label>
+                            <label
+                                style="display: inline-flex; align-items: center; gap: 0.25rem; cursor: pointer; font-size: 0.95rem; margin-top: 0.25rem;">
+                                <input type="checkbox" name="allow-nn" value="true"> 「ん」で終わる単語を許可する
+                            </label>
                         </div>
                     </div>
 
@@ -148,6 +152,7 @@
             const currentLives = localStorage.getItem('shiritori_max_lives') || '3';
             const currentLimit = localStorage.getItem('shiritori_question_limit') || '0';
             const includeUnapproved = localStorage.getItem('shiritori_include_unapproved') === 'true';
+            const allowNn = localStorage.getItem('shiritori_allow_nn') === 'true';
 
             const livesInput = form.querySelector(`input[name="max-lives"][value="${currentLives}"]`);
             if (livesInput) livesInput.checked = true;
@@ -158,16 +163,21 @@
             const includeUnapprovedInput = form.querySelector('input[name="include-unapproved-others"]');
             if (includeUnapprovedInput) includeUnapprovedInput.checked = includeUnapproved;
 
+            const allowNnInput = form.querySelector('input[name="allow-nn"]');
+            if (allowNnInput) allowNnInput.checked = allowNn;
+
             form.addEventListener('submit', (e) => {
                 e.preventDefault();
 
                 const selectedLives = form.querySelector('input[name="max-lives"]:checked').value;
                 const selectedLimit = form.querySelector('input[name="question-limit"]:checked').value;
                 const isIncludeUnapproved = form.querySelector('input[name="include-unapproved-others"]').checked;
+                const isAllowNn = form.querySelector('input[name="allow-nn"]').checked;
 
                 localStorage.setItem('shiritori_max_lives', selectedLives);
                 localStorage.setItem('shiritori_question_limit', selectedLimit);
                 localStorage.setItem('shiritori_include_unapproved', isIncludeUnapproved);
+                localStorage.setItem('shiritori_allow_nn', isAllowNn);
 
                 // 後方互換性のため古いキーも削除
                 localStorage.removeItem('shiritori_filter_scope');

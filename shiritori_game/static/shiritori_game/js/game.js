@@ -79,6 +79,13 @@ document.addEventListener('DOMContentLoaded', () => {
         if (lastChar === 'ー' && word.length > 1) {
             lastChar = word.slice(-2, -1);
         }
+        
+        // 「ん」で終わる単語を許可する設定がONの場合、そのまま「ん」を返す
+        const allowNn = localStorage.getItem('shiritori_allow_nn') === 'true';
+        if (allowNn && normalizeLetter(lastChar) === 'ん') {
+            return 'ん';
+        }
+        
         return normalizeLetter(lastChar);
     }
 
@@ -285,10 +292,11 @@ document.addEventListener('DOMContentLoaded', () => {
             scoreBox.style.transform = 'scale(1.1)';
             setTimeout(() => scoreBox.style.transform = 'scale(1)', 200);
 
-            // しりとりルール：「ん」で終わる単語を選んでしまった場合はゲームオーバー
+            // しりとりルール：「ん」で終わる単語を選んでしまった場合はゲームオーバー（許可設定OFFのときのみ）
             const lastLetter = correctReading.reading.slice(-1);
             const resolvedName = correctReading.display_name || correctReading.reading;
-            if (lastLetter === 'ん') {
+            const allowNn = localStorage.getItem('shiritori_allow_nn') === 'true';
+            if (lastLetter === 'ん' && !allowNn) {
                 setTimeout(() => {
                     endGame(false, `「${resolvedName}」の最後が「ん」で終わってしまいました！`);
                 }, 300);
