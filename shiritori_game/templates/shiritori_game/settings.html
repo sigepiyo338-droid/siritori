@@ -72,6 +72,36 @@
                         </div>
                     </div>
 
+                    <!-- 出題数設定 -->
+                    <div class="form-group" style="margin-bottom: 1.5rem;">
+                        <label
+                            style="display: block; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.75rem; font-weight: 600;">
+                            出題数（上限）
+                        </label>
+                        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                            <label
+                                style="display: inline-flex; align-items: center; gap: 0.35rem; cursor: pointer; font-size: 0.95rem;">
+                                <input type="radio" name="question-limit" value="0" checked> 無制限
+                            </label>
+                            <label
+                                style="display: inline-flex; align-items: center; gap: 0.35rem; cursor: pointer; font-size: 0.95rem;">
+                                <input type="radio" name="question-limit" value="10"> 10問
+                            </label>
+                            <label
+                                style="display: inline-flex; align-items: center; gap: 0.35rem; cursor: pointer; font-size: 0.95rem;">
+                                <input type="radio" name="question-limit" value="20"> 20問
+                            </label>
+                            <label
+                                style="display: inline-flex; align-items: center; gap: 0.35rem; cursor: pointer; font-size: 0.95rem;">
+                                <input type="radio" name="question-limit" value="30"> 30問
+                            </label>
+                            <label
+                                style="display: inline-flex; align-items: center; gap: 0.35rem; cursor: pointer; font-size: 0.95rem;">
+                                <input type="radio" name="question-limit" value="50"> 50問
+                            </label>
+                        </div>
+                    </div>
+
                     <!-- 出題対象設定 -->
                     <div class="form-group" style="margin-bottom: 2rem;">
                         <label
@@ -116,10 +146,14 @@
 
             // 既存の設定を読み込んでフォームにセット
             const currentLives = localStorage.getItem('shiritori_max_lives') || '3';
+            const currentLimit = localStorage.getItem('shiritori_question_limit') || '0';
             const includeUnapproved = localStorage.getItem('shiritori_include_unapproved') === 'true';
 
             const livesInput = form.querySelector(`input[name="max-lives"][value="${currentLives}"]`);
             if (livesInput) livesInput.checked = true;
+
+            const limitInput = form.querySelector(`input[name="question-limit"][value="${currentLimit}"]`);
+            if (limitInput) limitInput.checked = true;
 
             const includeUnapprovedInput = form.querySelector('input[name="include-unapproved-others"]');
             if (includeUnapprovedInput) includeUnapprovedInput.checked = includeUnapproved;
@@ -128,9 +162,11 @@
                 e.preventDefault();
 
                 const selectedLives = form.querySelector('input[name="max-lives"]:checked').value;
+                const selectedLimit = form.querySelector('input[name="question-limit"]:checked').value;
                 const isIncludeUnapproved = form.querySelector('input[name="include-unapproved-others"]').checked;
 
                 localStorage.setItem('shiritori_max_lives', selectedLives);
+                localStorage.setItem('shiritori_question_limit', selectedLimit);
                 localStorage.setItem('shiritori_include_unapproved', isIncludeUnapproved);
 
                 // 後方互換性のため古いキーも削除

@@ -46,6 +46,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let maxLives = 3;
     let correctChoice = null;   // 次の正解となる画像データ
     let correctReading = '';    // 正解の読み方
+    let questionLimit = 0;      // 出題上限数（0は無制限）
+    let currentQuestionCount = 0; // 現在の問題数（1から開始）
 
     // ひらがな平滑化のためのマッピング
     const smallToLarge = {
@@ -141,9 +143,11 @@ document.addEventListener('DOMContentLoaded', () => {
         combo = 0;
         maxCombo = 0;
         
-        // ローカルストレージからライフ数を読み込む
+        // ローカルストレージから設定を読み込む
         maxLives = parseInt(localStorage.getItem('shiritori_max_lives') || '3', 10);
         lives = maxLives;
+        questionLimit = parseInt(localStorage.getItem('shiritori_question_limit') || '0', 10);
+        currentQuestionCount = 1;
         
         usedImageIds.clear();
         historyTimeline.innerHTML = '';
@@ -291,8 +295,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
+            // 出題上限に達しているか判定
+            const isFinal = questionLimit > 0 && currentQuestionCount >= questionLimit;
+
             // 正解ポップアップを表示
-            showCorrectAnswerPopup(correctChoice, correctReading);
+            showCorrectAnswerPopup(correctChoice, correctReading, isFinal);
         } else {
             // 不正解（お手つき）の場合
             combo = 0;
@@ -318,7 +325,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // 正解ポップアップの表示と次の問題への進行
-    function showCorrectAnswerPopup(imgData, readingObj) {
+    function showCorrectAnswerPopup(imgData, readingObj, isFinal = false) {
         const popup = document.getElementById('correct-answer-popup');
         const overlay = document.getElementById('popup-overlay');
         const popupImg = document.getElementById('popup-image');
@@ -331,7 +338,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (!popup) {
             // もしポップアップ要素がなければそのまま次へ進む
-            setNewQuestion(imgData, readingObj);
+            if (isFinal) {
+                endGame(true);
+            } else {
+                currentQuestionCount++;
+                setNewQuestion(imgData, readingObj);
+            }
             return;
         }
 
@@ -358,7 +370,12 @@ document.addEventListener('DOMContentLoaded', () => {
             popup.classList.add('hidden');
             overlay.classList.add('hidden');
             popupOkBtn.removeEventListener('click', handleOkClick);
-            setNewQuestion(imgData, readingObj);
+            if (isFinal) {
+                endGame(true);
+            } else {
+                currentQuestionCount++;
+                setNewQuestion(imgData, readingObj);
+            }
         };
         
         popupOkBtn.addEventListener('click', handleOkClick);
