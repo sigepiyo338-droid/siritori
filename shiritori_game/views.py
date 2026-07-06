@@ -55,10 +55,10 @@ def image_upload(request):
                 
             game_image.save()
             
-            # 読み方を保存 (フォーム検証済みのリストを使用)
+            # 読み方を保存 (フォーム検証済みのリストを使用。タプル (reading, display_name) が入っている)
             readings = form.cleaned_data['reading']
-            for reading in readings:
-                ImageReading.objects.create(image=game_image, reading=reading)
+            for reading, display_name in readings:
+                ImageReading.objects.create(image=game_image, reading=reading, display_name=display_name)
                 
             messages.success(request, '画像を投稿しました！管理者が承認するまでゲーム内には表示されません。')
             return redirect('shiritori_game:game_index')
@@ -241,7 +241,13 @@ def image_list_api(request):
             data.append({
                 'id': img.id,
                 'image_url': img.image.url,
-                'readings': [r.reading for r in img.readings.all()],
+                'readings': [
+                    {
+                        'reading': r.reading,
+                        'display_name': r.display_name if r.display_name else ''
+                    }
+                    for r in img.readings.all()
+                ],
                 'user_id': img.user_id,
                 'submitter_name': submitter_name,
                 'remarks': img.remarks,

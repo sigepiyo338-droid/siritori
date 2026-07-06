@@ -16,11 +16,12 @@ class AuthViewsTestCase(TestCase):
         self.assertTemplateUsed(response, 'shiritori_game/login.html')
 
     def test_login_success(self):
+        # Log in first
         response = self.client.post(reverse('shiritori_game:login'), {
             'username': self.username,
             'password': self.password
         })
-        self.assertRedirects(response, reverse('shiritori_game:game_index'))
+        self.assertRedirects(response, reverse('landing'))
         self.assertTrue(response.wsgi_request.user.is_authenticated)
 
     def test_login_failure(self):
@@ -38,7 +39,7 @@ class AuthViewsTestCase(TestCase):
         self.client.login(username=self.username, password=self.password)
         # Log out
         response = self.client.get(reverse('shiritori_game:logout'))
-        self.assertRedirects(response, reverse('shiritori_game:game_index'))
+        self.assertRedirects(response, reverse('landing'))
         # Check that user is logged out
         self.assertFalse(response.wsgi_request.user.is_authenticated)
 
@@ -94,6 +95,37 @@ class AuthViewsTestCase(TestCase):
         self.assertIsNotNone(game_image2)
         saved_img2 = Image.open(game_image2.image.path)
         self.assertEqual(saved_img2.size, (300, 300))
+
+    def test_image_upload_with_display_name(self):
+        self.client.login(username=self.username, password=self.password)
+        from PIL import Image
+        import io
+        img_file = io.BytesIO()
+        img = Image.new('RGB', (100, 100))
+        img.save(img_file, format='PNG')
+        img_file.name = 'test_display_name.png'
+        img_file.seek(0)
+        
+        response = self.client.post(reverse('shiritori_game:image_upload'), {
+            'image': img_file,
+            'reading': 'りんご:林檎, あっぷる:Apple, ごりら'
+        })
+        self.assertRedirects(response, reverse('shiritori_game:game_index'))
+        
+        from .models import GameImage
+        game_image = GameImage.objects.filter(readings__reading='りんご').last()
+        self.assertIsNotNone(game_image)
+        
+        readings_list = list(game_image.readings.all().order_by('id'))
+        self.assertEqual(len(readings_list), 3)
+        self.assertEqual(readings_list[0].reading, 'りんご')
+        self.assertEqual(readings_list[0].display_name, '林檎')
+        self.assertEqual(readings_list[1].reading, 'あっぷる')
+        self.assertEqual(readings_list[1].display_name, 'Apple')
+        self.assertEqual(readings_list[2].reading, 'ごりら')
+        self.assertIsNone(readings_list[2].display_name)
+        
+        self.assertEqual(game_image.readings_display_list, ['林檎 (りんご)', 'Apple (あっぷる)', 'ごりら'])
 
     def test_upload_readings_limit_ok(self):
         self.client.login(username=self.username, password=self.password)

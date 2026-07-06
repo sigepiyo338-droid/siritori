@@ -162,7 +162,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // 最初のお題をセット（ランダム）
         // 1問目は「ん」で終わらない画像を優先する
         const validStartImages = allImages.filter(img => {
-            const firstReading = img.readings[0];
+            const firstReadingObj = img.readings[0];
+            const firstReading = firstReadingObj ? firstReadingObj.reading : '';
             return firstReading && firstReading.slice(-1) !== 'ん';
         });
 
@@ -174,20 +175,22 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // 新しいお題を画面にセット
-    function setNewQuestion(imgData, word) {
+    function setNewQuestion(imgData, readingObj) {
         currentImgData = imgData;
-        currentWord = word;
+        currentWord = readingObj.reading;
         usedImageIds.add(imgData.id);
+
+        const displayName = readingObj.display_name || readingObj.reading;
 
         // フェードアウトしてから画像切り替えするアニメーション
         questionCard.style.opacity = 0;
         
         setTimeout(() => {
             currentImage.src = imgData.image_url;
-            currentImage.alt = word;
-            currentReadingElement.textContent = word;
+            currentImage.alt = displayName;
+            currentReadingElement.textContent = displayName;
             
-            const nextLetter = getNextRequiredLetter(word);
+            const nextLetter = getNextRequiredLetter(readingObj.reading);
             nextStartLetterElement.textContent = nextLetter.toUpperCase();
             
             questionCard.style.opacity = 1;
@@ -198,7 +201,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 150);
 
         // 履歴に追加
-        addHistoryItem(imgData, word);
+        addHistoryItem(imgData, readingObj);
     }
 
     // 選択肢の生成
@@ -208,7 +211,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // 1. 正解となる画像を未使用の中から探す
         const correctCandidates = allImages.filter(img => 
             !usedImageIds.has(img.id) &&
-            img.readings.some(r => normalizeLetter(r.charAt(0)) === nextLetter)
+            img.readings.some(r => normalizeLetter(r.reading.charAt(0)) === nextLetter)
         );
 
         // 正解候補がない場合はゲームクリア！
@@ -220,14 +223,15 @@ document.addEventListener('DOMContentLoaded', () => {
         // 正解を1つ選出
         correctChoice = correctCandidates[Math.floor(Math.random() * correctCandidates.length)];
         
-        // 正解となる読み方を特定（つなぎ文字から始まるもの）
-        correctReading = correctChoice.readings.find(r => normalizeLetter(r.charAt(0)) === nextLetter);
+        // 正解となる読み方オブジェクトを特定（つなぎ文字から始まるもの）
+        correctReadingObj = correctChoice.readings.find(r => normalizeLetter(r.reading.charAt(0)) === nextLetter);
+        correctReading = correctReadingObj;
 
         // 2. ダミーの選択肢（正解以外の画像）を最大3つ選ぶ
         // ダミーの条件: 正解画像ではなく、かつ現在のお題のつなぎ文字から始まらないもの（使用済み画像もダミーに含める）
         const dummyCandidates = allImages.filter(img => 
             img.id !== correctChoice.id &&
-            !img.readings.some(r => normalizeLetter(r.charAt(0)) === nextLetter)
+            !img.readings.some(r => normalizeLetter(r.reading.charAt(0)) === nextLetter)
         );
 
         // ランダムにシャッフルして3つ選ぶ
@@ -278,10 +282,11 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => scoreBox.style.transform = 'scale(1)', 200);
 
             // しりとりルール：「ん」で終わる単語を選んでしまった場合はゲームオーバー
-            const lastLetter = correctReading.slice(-1);
+            const lastLetter = correctReading.reading.slice(-1);
+            const resolvedName = correctReading.display_name || correctReading.reading;
             if (lastLetter === 'ん') {
                 setTimeout(() => {
-                    endGame(false, `「${correctReading}」の最後が「ん」で終わってしまいました！`);
+                    endGame(false, `「${resolvedName}」の最後が「ん」で終わってしまいました！`);
                 }, 300);
                 return;
             }
@@ -313,7 +318,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // 正解ポップアップの表示と次の問題への進行
-    function showCorrectAnswerPopup(imgData, reading) {
+    function showCorrectAnswerPopup(imgData, readingObj) {
         const popup = document.getElementById('correct-answer-popup');
         const overlay = document.getElementById('popup-overlay');
         const popupImg = document.getElementById('popup-image');
@@ -322,14 +327,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const popupRemarks = document.getElementById('popup-remarks');
         const popupOkBtn = document.getElementById('popup-ok-btn');
 
+        const resolvedName = readingObj.display_name || readingObj.reading;
+
         if (!popup) {
             // もしポップアップ要素がなければそのまま次へ進む
-            setNewQuestion(imgData, reading);
+            setNewQuestion(imgData, readingObj);
             return;
         }
 
         popupImg.src = imgData.image_url;
-        popupReading.textContent = reading;
+        popupReading.textContent = resolvedName;
         if (popupSubmitter && imgData.submitter_name) {
             popupSubmitter.textContent = "投稿者: " + imgData.submitter_name + " さん";
         } else if (popupSubmitter) {
@@ -351,28 +358,30 @@ document.addEventListener('DOMContentLoaded', () => {
             popup.classList.add('hidden');
             overlay.classList.add('hidden');
             popupOkBtn.removeEventListener('click', handleOkClick);
-            setNewQuestion(imgData, reading);
+            setNewQuestion(imgData, readingObj);
         };
         
         popupOkBtn.addEventListener('click', handleOkClick);
     }
 
     // 履歴アイテムの作成
-    function addHistoryItem(imgData, word) {
+    function addHistoryItem(imgData, readingObj) {
         const item = document.createElement('div');
         item.className = 'history-item';
+        
+        const resolvedName = readingObj.display_name || readingObj.reading;
         
         item.innerHTML = `
             <div class="history-left">
                 <div class="history-img-wrapper">
-                    <img src="${imgData.image_url}" alt="${word}">
+                    <img src="${imgData.image_url}" alt="${resolvedName}">
                 </div>
                 <div class="history-word-info">
-                    <span class="history-kana">${word}</span>
+                    <span class="history-kana">${resolvedName}</span>
                 </div>
             </div>
             <div class="history-right">
-                → ${getNextRequiredLetter(word)}
+                → ${getNextRequiredLetter(readingObj.reading)}
             </div>
         `;
         

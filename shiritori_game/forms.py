@@ -41,10 +41,11 @@ class ImageUploadForm(forms.ModelForm):
     
     reading = forms.CharField(
         label='読み方（ひらがな）',
-        max_length=100,
-        help_text='しりとり用の読み方をひらがなで入力してください（最大5個。複数の場合はカンマ「,」や「、」で区切ってください。例: りんご, らいおん）。',
+        max_length=200,
+        help_text='しりとり用の読み方をひらがなで入力してください（最大5個。複数の場合はカンマ「,」や「、」で区切ってください。例: りんご, らいおん）。<br>'
+                  '表示名（名前）を設定したい場合は「ひらがな:表示名」のようにコロンで繋いで入力してください（例: りんご:林檎, あっぷる:Apple, ごりら）。',
         widget=forms.TextInput(attrs={
-            'placeholder': '例: りんご, らいおん',
+            'placeholder': '例: りんご:林檎, あっぷる:Apple, ごりら',
             'autocomplete': 'off'
         })
     )
@@ -54,23 +55,34 @@ class ImageUploadForm(forms.ModelForm):
         
         # カンマ「,」「，」や読点「、」で分割
         import re
-        readings = [r.strip() for r in re.split(r'[,，、]', reading_text) if r.strip()]
+        raw_readings = [r.strip() for r in re.split(r'[,，、]', reading_text) if r.strip()]
         
-        if not readings:
+        if not raw_readings:
             raise forms.ValidationError('読み方を入力してください。')
             
-        if len(readings) > 5:
+        if len(raw_readings) > 5:
             raise forms.ValidationError('読み方は1枚の画像に対して最大5個までしか登録できません。')
             
-        # 各読み方がひらがなのみか検証
+        parsed_readings = []
         from django.core.exceptions import ValidationError
-        for reading in readings:
+        
+        for item in raw_readings:
+            # コロン「:」「：」で読み方と表示名に分割
+            parts = re.split(r'[:：]', item, maxsplit=1)
+            reading = parts[0].strip()
+            display_name = parts[1].strip() if len(parts) > 1 else ''
+            
+            if not reading:
+                raise forms.ValidationError('読み方が空欄になっている項目があります。')
+                
             try:
                 hiragana_validator(reading)
             except ValidationError:
                 raise forms.ValidationError(f'読み方「{reading}」はひらがな（および長音符「ー」）のみで入力してください。')
                 
-        return readings
+            parsed_readings.append((reading, display_name if display_name else None))
+                
+        return parsed_readings
 
     class Meta:
         model = GameImage

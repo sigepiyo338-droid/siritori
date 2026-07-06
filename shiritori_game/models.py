@@ -80,6 +80,10 @@ class GameImage(models.Model):
     def readings_list(self):
         return [r.reading for r in self.readings.all()]
 
+    @property
+    def readings_display_list(self):
+        return [f"{r.display_name} ({r.reading})" if r.display_name else r.reading for r in self.readings.all()]
+
 
 class ImageReading(models.Model):
     image = models.ForeignKey(
@@ -93,6 +97,13 @@ class ImageReading(models.Model):
         validators=[hiragana_validator],
         verbose_name='読み方（ひらがな）',
         help_text='しりとり用の読み方をひらがなで入力してください（例: りんご）。'
+    )
+    display_name = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        verbose_name='表示名',
+        help_text='しりとりで選ばれた際に表示する名前（漢字やカタカナ、英語など）を設定します。空欄の場合は読み方（ひらがな）がそのまま表示されます（任意）。'
     )
     created_at = models.DateTimeField(
         auto_now_add=True,

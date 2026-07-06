@@ -18,12 +18,12 @@ class GameImageAdmin(admin.ModelAdmin):
 
     def readings_summary(self, obj):
         # 紐づく読み方をカンマ区切りで表示するヘルパー
-        return ", ".join(obj.readings_list)
+        return ", ".join(obj.readings_display_list)
     readings_summary.short_description = '登録されている読み方'
 
 @admin.register(ImageReading)
 class ImageReadingAdmin(admin.ModelAdmin):
-    list_display = ('id', 'image', 'reading', 'created_at')
+    list_display = ('id', 'image', 'reading', 'display_name', 'created_at')
     list_filter = ('created_at',)
     search_fields = ('reading', 'image__id')
 

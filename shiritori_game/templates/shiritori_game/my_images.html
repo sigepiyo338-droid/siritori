@@ -72,8 +72,8 @@
                             <div class="my-image-item">
                                 <img src="{{ img.image.url }}" alt="投稿画像">
                                 <div class="my-image-info">
-                                    <div class="my-image-readings" title="{{ img.readings_list|join:', ' }}">
-                                        {{ img.readings_list|join:", " }}
+                                    <div class="my-image-readings" title="{{ img.readings_display_list|join:', ' }}">
+                                        {{ img.readings_display_list|join:", " }}
                                     </div>
                                     <div class="my-image-status">
                                         {% if img.is_approved %}
