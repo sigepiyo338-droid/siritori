@@ -48,6 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let correctReading = '';    // 正解の読み方
     let questionLimit = 0;      // 出題上限数（0は無制限）
     let currentQuestionCount = 0; // 現在の問題数（1から開始）
+    let karutaMode = false;     // かるたモードフラグ
 
     // ひらがな平滑化のためのマッピング
     const smallToLarge = {
@@ -87,6 +88,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         return normalizeLetter(lastChar);
+    }
+
+    // かるたモード用：未使用の画像から次のターゲット文字をランダムで選択する
+    function getKarutaNextLetter() {
+        const availableLetters = allImages
+            .filter(img => !usedImageIds.has(img.id))
+            .flatMap(img => img.readings.map(r => normalizeLetter(r.reading.charAt(0))));
+        
+        const uniqueLetters = [...new Set(availableLetters)];
+        if (uniqueLetters.length === 0) return '';
+        
+        return uniqueLetters[Math.floor(Math.random() * uniqueLetters.length)];
     }
 
     // 初期データのロード
@@ -154,6 +167,7 @@ document.addEventListener('DOMContentLoaded', () => {
         maxLives = parseInt(localStorage.getItem('shiritori_max_lives') || '3', 10);
         lives = maxLives;
         questionLimit = parseInt(localStorage.getItem('shiritori_question_limit') || '0', 10);
+        karutaMode = localStorage.getItem('shiritori_karuta_mode') === 'true';
         currentQuestionCount = 1;
         
         usedImageIds.clear();
@@ -201,7 +215,8 @@ document.addEventListener('DOMContentLoaded', () => {
             currentImage.alt = displayName;
             currentReadingElement.textContent = displayName;
             
-            const nextLetter = getNextRequiredLetter(readingObj.reading);
+            // かるたモードならランダム、通常モードなら語尾を取得
+            const nextLetter = karutaMode ? getKarutaNextLetter() : getNextRequiredLetter(readingObj.reading);
             nextStartLetterElement.textContent = nextLetter.toUpperCase();
             
             questionCard.style.opacity = 1;
@@ -209,10 +224,10 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // 次の選択肢を生成
             generateChoices(nextLetter);
-        }, 150);
 
-        // 履歴に追加
-        addHistoryItem(imgData, readingObj);
+            // 履歴に追加
+            addHistoryItem(imgData, readingObj, nextLetter);
+        }, 150);
     }
 
     // 選択肢の生成
@@ -390,7 +405,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // 履歴アイテムの作成
-    function addHistoryItem(imgData, readingObj) {
+    function addHistoryItem(imgData, readingObj, nextLetter) {
         const item = document.createElement('div');
         item.className = 'history-item';
         
@@ -406,7 +421,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             </div>
             <div class="history-right">
-                → ${getNextRequiredLetter(readingObj.reading)}
+                → ${nextLetter.toUpperCase()}
             </div>
         `;
         
