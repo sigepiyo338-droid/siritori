@@ -23,7 +23,23 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-x9*e_pvekvx^y#=(9g=c9un4a#6_(ydo7-*c+tmtdp)yi-h*(o'
 
 # SECURITY WARNING: don't run with debug turned on in production!
+import json
+import os
+
 DEBUG = True
+
+CONFIG_PATH = BASE_DIR / 'config.json'
+if CONFIG_PATH.exists():
+    try:
+        with open(CONFIG_PATH, 'r', encoding='utf-8') as f:
+            config = json.load(f)
+            DEBUG = config.get('debug', True)
+    except Exception:
+        pass
+
+# 本番環境（PythonAnywhere）では強制的に False にする安全弁
+if 'pythonanywhere' in os.environ.get('USER', '').lower():
+    DEBUG = False
 
 ALLOWED_HOSTS = ['sigepiyo338.pythonanywhere.com', 'localhost', '127.0.0.1']
 

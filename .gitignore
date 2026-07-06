@@ -24,6 +24,7 @@ backups/
 # 環境変数・機密情報
 .env
 .env.local
+config.json
 
 # OS一時ファイル
 .DS_Store

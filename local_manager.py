@@ -667,8 +667,14 @@ def build_ui() -> tk.Tk:
                 creationflags = 0
                 if sys.platform == "win32":
                     creationflags = subprocess.CREATE_NO_WINDOW
+                
+                # DEBUGがFalseなら、ローカル起動時に静的ファイルが配信されるように --insecure を追加する
+                runserver_args = ["manage.py", "runserver"]
+                if not debug_var.get():
+                    runserver_args.append("--insecure")
+
                 app_server_process = subprocess.Popen(
-                    [python_executable, "manage.py", "runserver"],
+                    [python_executable] + runserver_args,
                     cwd=str(PROJECT_DIR),
                     creationflags=creationflags,
                 )
@@ -687,13 +693,65 @@ def build_ui() -> tk.Tk:
             status_var.set(f"Djangoサーバー起動失敗: {exc}")
             messagebox.showerror("エラー", f"Djangoサーバー起動失敗: {exc}")
 
+    # ---- DEBUGモード切り替えの追加 ----
+    config_path = PROJECT_DIR / "config.json"
+    
+    def read_debug_status() -> bool:
+        if config_path.exists():
+            try:
+                with open(config_path, "r", encoding="utf-8") as f:
+                    config = json.load(f)
+                    return config.get("debug", True)
+            except Exception:
+                pass
+        return True
+
+    def write_debug_status(status: bool) -> None:
+        try:
+            with open(config_path, "w", encoding="utf-8") as f:
+                json.dump({"debug": status}, f, ensure_ascii=False, indent=2)
+        except Exception as e:
+            messagebox.showerror("エラー", f"設定の保存に失敗しました: {e}")
+
+    debug_var = tk.BooleanVar(value=read_debug_status())
+    debug_status_var = tk.StringVar()
+
+    def update_debug_label():
+        if debug_var.get():
+            debug_status_var.set("現在のモード: デバッグON (開発環境)")
+        else:
+            debug_status_var.set("現在のモード: デバッグOFF (本番シミュレーション)")
+
+    def on_debug_toggle():
+        write_debug_status(debug_var.get())
+        update_debug_label()
+
+    update_debug_label()
+
+    debug_frame = ttk.LabelFrame(test_tab, text="Django設定 (DEBUG)", style="Manager.TFrame", padding=8)
+    debug_frame.grid(row=2, column=0, sticky="ew", pady=(0, 12))
+    debug_frame.columnconfigure(0, weight=1)
+
+    ttk.Checkbutton(
+        debug_frame,
+        text="デバッグモードを有効にする (CSS表示やエラー詳細表示がONになります)",
+        variable=debug_var,
+        command=on_debug_toggle
+    ).grid(row=0, column=0, sticky="w", pady=(0, 4))
+
+    ttk.Label(
+        debug_frame,
+        textvariable=debug_status_var,
+        font=("", 9, "bold")
+    ).grid(row=1, column=0, sticky="w")
+
     ttk.Button(test_tab, text="ローカル起動", command=handle_run_app_py).grid(
-        row=2, column=0, sticky="w"
+        row=3, column=0, sticky="w"
     )
     ttk.Label(
         test_tab,
         text="※ Django開発サーバーはバックグラウンドで起動します。",
-    ).grid(row=3, column=0, sticky="w", pady=(6, 0))
+    ).grid(row=4, column=0, sticky="w", pady=(6, 0))
 
 
     ttk.Label(frame, textvariable=status_var).grid(
