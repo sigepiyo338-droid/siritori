@@ -70,7 +70,7 @@
                     <div class="my-images-grid">
                         {% for img in images %}
                             <div class="my-image-item">
-                                <img src="{{ img.image.url }}" alt="投稿画像">
+                                <img src="{{ img.image_url }}" alt="投稿画像">
                                 <div class="my-image-info">
                                     <div class="my-image-readings" title="{{ img.readings_display_list|join:', ' }}">
                                         {{ img.readings_display_list|join:", " }}

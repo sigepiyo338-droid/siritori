@@ -285,7 +285,7 @@ def image_list_api(request):
 
             data.append({
                 'id': img.id,
-                'image_url': img.image.url,
+                'image_url': img.image_url,
                 'readings': [
                     {
                         'reading': r.reading,

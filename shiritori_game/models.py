@@ -77,6 +77,18 @@ class GameImage(models.Model):
         return f"画像 ID: {self.id} ({self.image.name})"
 
     @property
+    def image_url(self) -> str:
+        if self.image:
+            try:
+                if self.image.storage.exists(self.image.name):
+                    return self.image.url
+            except Exception:
+                pass
+            ONLINE_MEDIA_BASE = "https://sigepiyo338.pythonanywhere.com/media/"
+            return f"{ONLINE_MEDIA_BASE}{self.image.name}"
+        return ""
+
+    @property
     def readings_list(self):
         return [r.reading for r in self.readings.all()]
 
