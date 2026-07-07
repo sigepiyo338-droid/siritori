@@ -99,3 +99,11 @@ class ImageUploadForm(forms.ModelForm):
                 'rows': 3,
             })
         }
+
+
+class ImageEditForm(ImageUploadForm):
+    """画像付随情報編集用フォーム（画像ファイルは変更不可）"""
+    field_order = ['reading', 'remarks']
+    
+    class Meta(ImageUploadForm.Meta):
+        fields = ['remarks']

@@ -100,6 +100,45 @@ def delete_image(request, image_id):
     return redirect('shiritori_game:my_images')
 
 
+@login_required(login_url='shiritori_game:login')
+def edit_image(request, image_id):
+    """
+    ログインユーザーが自身で投稿した画像の付随情報を編集するビュー
+    """
+    import json
+    from .forms import ImageEditForm
+    
+    game_image = get_object_or_404(GameImage, pk=image_id)
+    
+    if game_image.user != request.user:
+        messages.error(request, '自分が投稿した画像以外は編集できません。')
+        return redirect('shiritori_game:my_images')
+        
+    if request.method == 'POST':
+        form = ImageEditForm(request.POST, instance=game_image)
+        if form.is_valid():
+            form.save()
+            
+            # 既存の読み方をクリアして再登録
+            game_image.readings.all().delete()
+            readings = form.cleaned_data['reading']
+            for reading, display_name in readings:
+                ImageReading.objects.create(image=game_image, reading=reading, display_name=display_name)
+                
+            messages.success(request, '画像情報を更新しました。')
+            return redirect('shiritori_game:my_images')
+    else:
+        # 現在の読み方をJSON文字列にして初期値としてセット
+        existing_readings = [
+            {'reading': r.reading, 'display_name': r.display_name or ''}
+            for r in game_image.readings.all()
+        ]
+        initial_data = {'reading': json.dumps(existing_readings, ensure_ascii=False)}
+        form = ImageEditForm(instance=game_image, initial=initial_data)
+        
+    return render(request, 'shiritori_game/edit_image.html', {'form': form, 'game_image': game_image})
+
+
 
 def get_least_used_characters():
     import random
