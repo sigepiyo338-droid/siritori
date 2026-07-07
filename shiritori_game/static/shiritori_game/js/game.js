@@ -260,9 +260,11 @@ document.addEventListener('DOMContentLoaded', () => {
             !img.readings.some(r => normalizeLetter(r.reading.charAt(0)) === nextLetter)
         );
 
-        // ランダムにシャッフルして3つ選ぶ
+        // ランダムにシャッフルして最大8つ（3x3マス用）選ぶ
         const shuffledDummies = shuffleArray([...dummyCandidates]);
-        const dummies = shuffledDummies.slice(0, 3);
+        // 候補が8つ未満の場合はある分だけすべて使う
+        const dummyCount = Math.min(8, shuffledDummies.length);
+        const dummies = shuffledDummies.slice(0, dummyCount);
 
         // 3. 正解とダミーを結合してシャッフル
         const choiceList = shuffleArray([correctChoice, ...dummies]);
