@@ -163,18 +163,78 @@ def post_personality(request):
         body = json.loads(request.body)
         name = body.get('name', '').strip()
         label = body.get('label', '').strip()
+        author = body.get('author', 'ゲスト').strip() or 'ゲスト'
 
         if not name or not label:
             return JsonResponse({'error': '性格名とラベルは必須です'}, status=400)
+            
+        posted_by = request.user.username if request.user.is_authenticated else None
 
         conn = get_db()
         conn.execute(
-            'INSERT INTO personalities (name, label) VALUES (?, ?)',
-            (name, label),
+            'INSERT INTO personalities (name, label, author, posted_by) VALUES (?, ?, ?, ?)',
+            (name, label, author, posted_by),
         )
         conn.commit()
         conn.close()
         return JsonResponse({'message': '性格を登録しました'})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+def my_personalities(request):
+    """ログインユーザーが投稿した性格一覧を返す API"""
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': 'ログインが必要です'}, status=401)
+        
+    try:
+        conn = get_db()
+        rows = conn.execute(
+            'SELECT id, name, label FROM personalities WHERE posted_by = ? ORDER BY id DESC',
+            (request.user.username,)
+        ).fetchall()
+        conn.close()
+        
+        data = [
+            {
+                'id': r['id'],
+                'name': r['name'],
+                'label': r['label'],
+            }
+            for r in rows
+        ]
+        return JsonResponse(data, safe=False, json_dumps_params={'ensure_ascii': False})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@csrf_exempt
+@require_POST
+def delete_personality(request, personality_id):
+    """ログインユーザーが自分の投稿した性格を削除する API"""
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': 'ログインが必要です'}, status=401)
+        
+    try:
+        conn = get_db()
+        row = conn.execute(
+            'SELECT id FROM personalities WHERE id = ? AND posted_by = ?',
+            (personality_id, request.user.username)
+        ).fetchone()
+        
+        if not row:
+            conn.close()
+            return JsonResponse({'error': '削除権限がないか、性格が存在しません'}, status=403)
+            
+        # 関連するscoresの削除
+        conn.execute('DELETE FROM scores WHERE personality_id = ?', (personality_id,))
+        # 自身を削除
+        conn.execute('DELETE FROM personalities WHERE id = ?', (personality_id,))
+        
+        conn.commit()
+        conn.close()
+        
+        return JsonResponse({'message': '性格を削除しました'})
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 

@@ -13,4 +13,6 @@ urlpatterns = [
     path('api/radar-scores', views.radar_scores, name='radar_scores'),
     path('api/my_questions', views.my_questions, name='my_questions'),
     path('api/delete/question/<int:question_id>', views.delete_question, name='delete_question'),
+    path('api/my_personalities', views.my_personalities, name='my_personalities'),
+    path('api/delete/personality/<int:personality_id>', views.delete_personality, name='delete_personality'),
 ]

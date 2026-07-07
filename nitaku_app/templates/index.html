@@ -56,8 +56,11 @@
             <div style="border: 1px solid #ddd; padding: 15px; margin-bottom: 20px; border-radius: 8px;">
                 <h3>▼ 新しい「性格」を定義</h3>
                 <p style="font-size: 0.7rem;">例：性格名「エゴイスト」、ラベル「エゴ度」</p>
-                <input type="text" id="user-p-name" placeholder="性格名">
-                <input type="text" id="user-p-label" placeholder="表示ラベル">
+                <div style="display: flex; gap: 5px; margin-bottom: 5px;">
+                    <input type="text" id="user-p-name" placeholder="性格名">
+                    <input type="text" id="user-p-label" placeholder="表示ラベル">
+                </div>
+                <input type="text" id="user-p-author" placeholder="あなたの名前">
                 <button onclick="addUserPersonality()" style="background-color: #27ae60;">性格を追加</button>
             </div>
             <button onclick="showSection('post-management-page')" style="background-color: #95a5a6;">戻る</button>
@@ -65,15 +68,22 @@
 
         <section id="post-management-page" class="section hidden">
             <h2>投稿管理</h2>
-            <button onclick="loadMyQuestions()" style="background-color: #3498db;">自分の投稿一覧</button>
+            <button onclick="loadMyQuestions()" style="background-color: #3498db;">自分の投稿一覧（質問）</button>
+            <button onclick="loadMyPersonalities()" style="background-color: #9b59b6;">自分の投稿一覧（性格）</button>
             <button onclick="showSection('question-post-page')">質問投稿</button>
             <button onclick="showSection('personality-post-page')">性格投稿</button>
             <button onclick="showSection('menu-page')" style="background-color: #95a5a6;">戻る</button>
         </section>
 
         <section id="my-questions-page" class="section hidden">
-            <h2>自分の投稿一覧</h2>
+            <h2>自分の投稿一覧（質問）</h2>
             <div id="my-questions-list" style="margin-bottom: 20px;"></div>
+            <button onclick="showSection('post-management-page')" style="background-color: #95a5a6;">戻る</button>
+        </section>
+
+        <section id="my-personalities-page" class="section hidden">
+            <h2>自分の投稿一覧（性格）</h2>
+            <div id="my-personalities-list" style="margin-bottom: 20px;"></div>
             <button onclick="showSection('post-management-page')" style="background-color: #95a5a6;">戻る</button>
         </section>
 

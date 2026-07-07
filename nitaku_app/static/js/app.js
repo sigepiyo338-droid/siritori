@@ -222,10 +222,67 @@ async function deleteMyQuestion(id) {
     }
 }
 
+// 自分の性格投稿一覧を読み込む
+async function loadMyPersonalities() {
+    showSection('my-personalities-page');
+    const listContainer = document.getElementById('my-personalities-list');
+    listContainer.innerHTML = '<p>読み込み中...</p>';
+    try {
+        const res = await fetch(`${API_BASE_URL}my_personalities`);
+        if (!res.ok) {
+            listContainer.innerHTML = '<p>読み込みに失敗しました。</p>';
+            return;
+        }
+        const ps = await res.json();
+        if (ps.length === 0) {
+            listContainer.innerHTML = '<p>投稿した性格はありません。</p>';
+            return;
+        }
+        listContainer.innerHTML = '';
+        ps.forEach(p => {
+            const div = document.createElement('div');
+            div.style.border = '1px solid #ddd';
+            div.style.padding = '10px';
+            div.style.marginBottom = '10px';
+            div.style.borderRadius = '5px';
+            div.style.textAlign = 'left';
+            div.innerHTML = `
+                <p style="font-weight: bold; margin-bottom: 5px;">${p.name}</p>
+                <p style="font-size: 0.85rem; color: gray;">ラベル: ${p.label}</p>
+                <button onclick="deleteMyPersonality(${p.id})" style="background-color: #e74c3c; margin-top: 10px; padding: 5px 10px; font-size: 0.8rem; width: auto; color: white; border: none; border-radius: 3px; cursor: pointer;">削除</button>
+            `;
+            listContainer.appendChild(div);
+        });
+    } catch (e) {
+        listContainer.innerHTML = '<p>エラーが発生しました。</p>';
+    }
+}
+
+// 自分の性格投稿を削除する
+async function deleteMyPersonality(id) {
+    if (!confirm('本当にこの性格を削除しますか？\n（関連する分析データも削除されます）')) return;
+    try {
+        const res = await fetch(`${API_BASE_URL}delete/personality/${id}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        if (res.ok) {
+            alert('削除しました。');
+            loadMyPersonalities(); // 一覧を再読み込み
+        } else {
+            const data = await res.json();
+            alert(`削除に失敗しました: ${data.error || '原因不明'}`);
+        }
+    } catch (e) {
+        alert('通信エラーが発生しました。');
+    }
+}
+
 /** 新しい性格軸（診断項目）の追加 */
 async function addUserPersonality() {
     const name = document.getElementById('user-p-name').value.trim();
     const label = document.getElementById('user-p-label').value.trim();
+    const author = document.getElementById('user-p-author').value.trim();
 
     // 入力バリデーションの追加：空欄の場合は中断
     if (!name || !label) return alert("必須項目を入力してください。");
@@ -233,7 +290,7 @@ async function addUserPersonality() {
     const res = await fetch(`${API_BASE_URL}post/personality`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, label })
+        body: JSON.stringify({ name, label, author })
     });
     if (res.ok) {
         alert("新しい性格軸を追加しました！");
