@@ -1,0 +1,117 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="しりとり師範くん 投稿画像一覧">
+    <title>全ユーザーの画像一覧（管理者用） | しりとり師範くん</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Noto+Sans+JP:wght@300;400;700;900&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="{% static 'shiritori_game/css/style.css' %}">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{% static 'img/sihankun_100t.png' %}">
+</head>
+<body>
+    <div id="app-container" class="app-container" style="min-height: 100vh;">
+        <!-- 背景の動的な光の装飾 -->
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        
+        <header class="app-header">
+            <div class="header-logo">
+                <img src="{% static 'img/sihankun_100t.png' %}" alt="しりとり師範くんロゴ" class="logo-icon-img">
+                <div class="logo-text-group">
+                    <h1>しりとり師範くん</h1>
+                    <div class="user-status">
+                        {% if user.is_authenticated %}
+                            <span class="user-name"><i class="fa-solid fa-user"></i> {{ user.username }}さん</span>
+                            <span class="status-sep">|</span>
+                            <a href="{% url 'shiritori_game:logout' %}" class="auth-link"><i class="fa-solid fa-right-from-bracket"></i> ログアウト</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div>
+                <a href="{% url 'shiritori_game:game_index' %}" class="btn btn-secondary" style="font-size: 0.9rem; padding: 0.5rem 1rem;"><i class="fa-solid fa-house"></i> トップ</a>
+            </div>
+        </header>
+
+        <main class="game-main" style="margin-bottom: 2rem;">
+            {% if messages %}
+                <div class="messages-container">
+                    {% for message in messages %}
+                        <div class="message-bubble {{ message.tags }}">
+                            <i class="fa-solid fa-circle-check"></i>
+                            <span>{{ message }}</span>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <div class="game-card menu-card" style="max-width: 100%; padding: 2rem;">
+                <h2 style="font-size: 1.4rem; margin-bottom: 0.5rem; font-weight: 700; color: var(--text-primary);">
+                    全ユーザーの画像一覧（管理者用）
+                </h2>
+                <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 2rem; line-height: 1.6;">
+                    全ユーザーが投稿したしりとり用の画像と読み方の一覧です。管理者権限で全画像の編集・削除が可能です。
+                </p>
+
+                {% if images %}
+                    <div class="my-images-grid">
+                        {% for img in images %}
+                            <div class="my-image-item">
+                                <img src="{{ img.image.url }}" alt="投稿画像">
+                                <div class="my-image-info">
+                                    <div style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.2rem; font-weight: 600;">
+                                        <i class="fa-solid fa-user"></i> 投稿者: {{ img.user.username|default:"ゲスト" }}
+                                    </div>
+                                    <div class="my-image-readings" title="{{ img.readings_display_list|join:', ' }}">
+                                        {{ img.readings_display_list|join:", " }}
+                                    </div>
+                                    <div class="my-image-status">
+                                        {% if img.is_approved %}
+                                            <span class="status-approved"><i class="fa-solid fa-circle-check"></i> 承認済み</span>
+                                        {% else %}
+                                            <span class="status-pending"><i class="fa-solid fa-circle-notch fa-spin"></i> 承認待ち</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div style="display: flex; gap: 0.5rem; width: 100%; justify-content: center;">
+                                    <a href="{% url 'shiritori_game:edit_image' img.id %}" class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.75rem; border-radius: 6px; flex: 1; text-align: center; display: flex; align-items: center; justify-content: center; gap: 0.25rem;">
+                                        <i class="fa-solid fa-pen"></i> 編集
+                                    </a>
+                                    <form method="post" action="{% url 'shiritori_game:delete_image' img.id %}" onsubmit="return confirm('本当にこの画像を削除しますか？\n紐づいている読み方もすべて削除されます。');" style="flex: 1;">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-delete" style="padding: 0.4rem 0.8rem; font-size: 0.75rem; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 0.25rem; width: 100%; justify-content: center; border: none; font-weight: 600;">
+                                            <i class="fa-solid fa-trash-can"></i> 削除
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div style="text-align: center; padding: 3rem 1rem; color: var(--text-secondary);">
+                        <i class="fa-solid fa-images" style="font-size: 3rem; color: #cbd5e1; margin-bottom: 1rem;"></i>
+                        <p>投稿された画像がありません。</p>
+                    </div>
+                {% endif %}
+            </div>
+        </main>
+        
+        <footer class="app-footer">
+            <p>&copy; 2026 しりとり師範くん <span id="app-version">v1.2.2</span></p>
+        </footer>
+    </div>
+</body>
+</html>

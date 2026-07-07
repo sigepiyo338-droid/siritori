@@ -15,5 +15,6 @@ urlpatterns = [
     path('api/images/', views.image_list_api, name='image_list_api'),
     path('settings/', views.game_settings, name='game_settings'),
     path('management/', views.post_management, name='post_management'),
+    path('management/all-images/', views.all_users_images, name='all_users_images'),
     path('account/', views.account_settings, name='account_settings'),
 ]

@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
 from django.contrib.auth import login as auth_login, logout as auth_logout
 from django.contrib.auth.forms import AuthenticationForm
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from django.db.models import Q
 from .models import GameImage, ImageReading
@@ -91,12 +91,16 @@ def delete_image(request, image_id):
         
     game_image = get_object_or_404(GameImage, pk=image_id)
     
-    if game_image.user != request.user:
+    if game_image.user != request.user and not request.user.is_superuser:
         messages.error(request, '自分が投稿した画像以外は削除できません。')
         return redirect('shiritori_game:my_images')
         
     game_image.delete()
     messages.success(request, '画像を削除しました。')
+    
+    # 管理者が他人の画像を削除した場合は全画像一覧へ戻る
+    if request.user.is_superuser and game_image.user != request.user:
+        return redirect('shiritori_game:all_users_images')
     return redirect('shiritori_game:my_images')
 
 
@@ -110,7 +114,7 @@ def edit_image(request, image_id):
     
     game_image = get_object_or_404(GameImage, pk=image_id)
     
-    if game_image.user != request.user:
+    if game_image.user != request.user and not request.user.is_superuser:
         messages.error(request, '自分が投稿した画像以外は編集できません。')
         return redirect('shiritori_game:my_images')
         
@@ -126,6 +130,8 @@ def edit_image(request, image_id):
                 ImageReading.objects.create(image=game_image, reading=reading, display_name=display_name)
                 
             messages.success(request, '画像情報を更新しました。')
+            if request.user.is_superuser and game_image.user != request.user:
+                return redirect('shiritori_game:all_users_images')
             return redirect('shiritori_game:my_images')
     else:
         # 現在の読み方をJSON文字列にして初期値としてセット
@@ -308,6 +314,14 @@ def post_management(request):
     投稿管理画面を表示するビュー
     """
     return render(request, 'shiritori_game/management.html')
+
+@user_passes_test(lambda u: u.is_superuser)
+def all_users_images(request):
+    """
+    管理者専用: 全ユーザーの投稿画像一覧を表示するビュー
+    """
+    images = GameImage.objects.all().select_related('user').prefetch_related('readings')
+    return render(request, 'shiritori_game/all_images.html', {'images': images})
 
 
 @login_required(login_url='shiritori_game:login')
