@@ -284,6 +284,26 @@ document.addEventListener('DOMContentLoaded', () => {
             card.addEventListener('click', () => handleChoiceClick(imgData));
             choicesContainer.appendChild(card);
         });
+
+        // お助け（自動正解）ボタンの追加
+        const hintBtn = document.createElement('div');
+        hintBtn.className = 'choice-card hint-btn';
+        if (lives <= 1) {
+            hintBtn.classList.add('disabled');
+        }
+        hintBtn.innerHTML = `
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                <span style="font-weight: 700; color: var(--accent-purple); font-size: 1.1rem;"><i class="fa-solid fa-wand-magic-sparkles"></i> お助けパス</span>
+                <span style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.2rem;">（ライフを1消費）</span>
+            </div>
+            <span class="shortcut-key-hint">0</span>
+        `;
+        hintBtn.addEventListener('click', () => {
+            if (lives > 1 && !hintBtn.classList.contains('disabled')) {
+                handleHintClick();
+            }
+        });
+        choicesContainer.appendChild(hintBtn);
     }
 
     // 配列のランダムシャッフル
@@ -293,6 +313,23 @@ document.addEventListener('DOMContentLoaded', () => {
             [array[i], array[j]] = [array[j], array[i]];
         }
         return array;
+    }
+
+    // お助け（自動正解）クリック時の処理
+    function handleHintClick() {
+        if (lives <= 1 || !correctChoice) return;
+        
+        // ライフ減少
+        lives--;
+        renderLives();
+        
+        // コンボリセット（スコア加算なし）
+        combo = 0;
+        comboVal.textContent = combo;
+        
+        // 正解表示へ進む
+        const isFinal = questionLimit > 0 && currentQuestionCount >= questionLimit;
+        showCorrectAnswerPopup(correctChoice, correctReading, isFinal);
     }
 
     // 選択肢クリック時の処理
@@ -496,12 +533,21 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const cards = choicesContainer.querySelectorAll('.choice-card');
+        const cards = choicesContainer.querySelectorAll('.choice-card:not(.hint-btn)');
         if (cards.length === 0) return;
 
         let index = -1;
         const key = e.key;
         
+        // 「0」またはテンキーの「0」でお助けボタンを発動
+        if (key === '0' || e.code === 'Numpad0') {
+            const hintBtn = choicesContainer.querySelector('.hint-btn');
+            if (hintBtn && !hintBtn.classList.contains('disabled')) {
+                hintBtn.click();
+            }
+            return;
+        }
+
         // テンキーまたは上部の数字キー (1〜9)
         if (['1', '2', '3', '4', '5', '6', '7', '8', '9'].includes(key)) {
             // Numpadの配置に合わせたマッピング
