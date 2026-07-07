@@ -40,37 +40,40 @@ class ImageUploadForm(forms.ModelForm):
     field_order = ['image', 'reading', 'remarks']
     
     reading = forms.CharField(
-        label='読み方（ひらがな）',
-        max_length=200,
-        help_text='しりとり用の読み方をひらがなで入力してください（最大5個。複数の場合はカンマ「,」や「、」で区切ってください。例: りんご, らいおん）。<br>'
-                  '表示名（名前）を設定したい場合は「ひらがな:表示名」のようにコロンで繋いで入力してください（例: りんご:林檎, あっぷる:Apple, ごりら）。',
-        widget=forms.TextInput(attrs={
-            'placeholder': '例: りんご:林檎, あっぷる:Apple, ごりら',
-            'autocomplete': 'off'
-        })
+        label='読み方・表示名',
+        max_length=2000,
+        required=False,
+        help_text='しりとり用の読み方をひらがなで入力してください（最大5個まで追加可能）。<br>'
+                  '表示名を入力すると、ゲーム内でその名前が表示されます。',
     )
 
     def clean_reading(self):
         reading_text = self.cleaned_data.get('reading', '')
         
-        # カンマ「,」「，」や読点「、」で分割
-        import re
-        raw_readings = [r.strip() for r in re.split(r'[,，、]', reading_text) if r.strip()]
+        if not reading_text:
+            raise forms.ValidationError('読み方を入力してください。')
+
+        import json
+        from django.core.exceptions import ValidationError
         
-        if not raw_readings:
+        try:
+            raw_data = json.loads(reading_text)
+        except Exception:
+            raise forms.ValidationError('データの形式が不正です。')
+            
+        if not isinstance(raw_data, list) or not raw_data:
             raise forms.ValidationError('読み方を入力してください。')
             
-        if len(raw_readings) > 5:
+        if len(raw_data) > 5:
             raise forms.ValidationError('読み方は1枚の画像に対して最大5個までしか登録できません。')
             
         parsed_readings = []
-        from django.core.exceptions import ValidationError
         
-        for item in raw_readings:
-            # コロン「:」「：」で読み方と表示名に分割
-            parts = re.split(r'[:：]', item, maxsplit=1)
-            reading = parts[0].strip()
-            display_name = parts[1].strip() if len(parts) > 1 else ''
+        for item in raw_data:
+            if not isinstance(item, dict):
+                continue
+            reading = item.get('reading', '').strip()
+            display_name = item.get('display_name', '').strip()
             
             if not reading:
                 raise forms.ValidationError('読み方が空欄になっている項目があります。')
@@ -81,7 +84,10 @@ class ImageUploadForm(forms.ModelForm):
                 raise forms.ValidationError(f'読み方「{reading}」はひらがな（および長音符「ー」）のみで入力してください。')
                 
             parsed_readings.append((reading, display_name if display_name else None))
-                
+            
+        if not parsed_readings:
+            raise forms.ValidationError('有効な読み方が入力されていません。')
+            
         return parsed_readings
 
     class Meta:
