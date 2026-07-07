@@ -270,10 +270,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const choiceList = shuffleArray([correctChoice, ...dummies]);
 
         // 4. 画面上に描画
-        choiceList.forEach(imgData => {
+        const numpadMap = [7, 8, 9, 4, 5, 6, 1, 2, 3];
+        choiceList.forEach((imgData, index) => {
             const card = document.createElement('div');
             card.className = 'choice-card';
-            card.innerHTML = `<img src="${imgData.image_url}" alt="選択肢">`;
+            const numKey = numpadMap[index] !== undefined ? numpadMap[index] : (index + 1);
+            
+            card.innerHTML = `
+                <img src="${imgData.image_url}" alt="選択肢">
+                <span class="shortcut-key-hint">${numKey}</span>
+            `;
             
             card.addEventListener('click', () => handleChoiceClick(imgData));
             choicesContainer.appendChild(card);
@@ -462,10 +468,58 @@ document.addEventListener('DOMContentLoaded', () => {
     gameOverHomeBtn.addEventListener('click', returnToHome);
     gameClearHomeBtn.addEventListener('click', returnToHome);
 
-    // ゲーム開始ボタンのクリックイベント
     startGameBtn.addEventListener('click', () => {
         gameMenu.classList.add('hidden');
         gameLoading.classList.remove('hidden');
         loadGameData();
+    });
+
+    // キーボードショートカット（1〜9キー、テンキー）で選択肢を選ぶ
+    document.addEventListener('keydown', (e) => {
+        // 入力フォーム等にフォーカスがある場合は無視
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+        
+        const popup = document.getElementById('correct-answer-popup');
+        
+        // ポップアップ表示中の場合
+        if (popup && !popup.classList.contains('hidden')) {
+            // Enterキーで「OK」ボタンを押したことにする
+            if (e.key === 'Enter') {
+                const okBtn = document.getElementById('popup-ok-btn');
+                if (okBtn) okBtn.click();
+            }
+            return; // ポップアップ中は他のショートカットを無効化
+        }
+
+        // ゲーム画面が非表示の場合は無視
+        if (gamePlayArea.classList.contains('hidden')) {
+            return;
+        }
+
+        const cards = choicesContainer.querySelectorAll('.choice-card');
+        if (cards.length === 0) return;
+
+        let index = -1;
+        const key = e.key;
+        
+        // テンキーまたは上部の数字キー (1〜9)
+        if (['1', '2', '3', '4', '5', '6', '7', '8', '9'].includes(key)) {
+            // Numpadの配置に合わせたマッピング
+            if (e.code.startsWith('Numpad')) {
+                const map = {
+                    '7': 0, '8': 1, '9': 2,
+                    '4': 3, '5': 4, '6': 5,
+                    '1': 6, '2': 7, '3': 8
+                };
+                index = map[key];
+            } else {
+                // 上部数字キーの場合は 1〜9 をそのまま 0〜8 のインデックスに
+                index = parseInt(key, 10) - 1;
+            }
+        }
+        
+        if (index >= 0 && index < cards.length) {
+            cards[index].click();
+        }
     });
 });

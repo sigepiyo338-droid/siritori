@@ -326,6 +326,7 @@ body {
     align-items: center;
     transition: var(--transition-smooth);
     box-shadow: 0 4px 12px rgba(148, 163, 184, 0.05);
+    position: relative;
 }
 
 .choice-card:hover {
@@ -342,6 +343,20 @@ body {
     border-radius: 10px;
     pointer-events: none;
     /* 画像自体へのクリックイベントを回避 */
+}
+
+.shortcut-key-hint {
+    position: absolute;
+    bottom: 4px;
+    right: 6px;
+    background: rgba(0, 0, 0, 0.15);
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-weight: 700;
+    pointer-events: none;
+    font-family: 'Outfit', sans-serif;
 }
 
 /* ライフ（ハート）表示 */
