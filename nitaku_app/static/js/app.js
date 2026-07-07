@@ -166,6 +166,62 @@ async function submitPost() {
     location.reload(); 
 }
 
+// 自分の投稿一覧を読み込む
+async function loadMyQuestions() {
+    showSection('my-questions-page');
+    const listContainer = document.getElementById('my-questions-list');
+    listContainer.innerHTML = '<p>読み込み中...</p>';
+    try {
+        const res = await fetch(`${API_BASE_URL}my_questions`);
+        if (!res.ok) {
+            listContainer.innerHTML = '<p>読み込みに失敗しました。</p>';
+            return;
+        }
+        const qs = await res.json();
+        if (qs.length === 0) {
+            listContainer.innerHTML = '<p>投稿した質問はありません。</p>';
+            return;
+        }
+        listContainer.innerHTML = '';
+        qs.forEach(q => {
+            const div = document.createElement('div');
+            div.style.border = '1px solid #ddd';
+            div.style.padding = '10px';
+            div.style.marginBottom = '10px';
+            div.style.borderRadius = '5px';
+            div.style.textAlign = 'left';
+            div.innerHTML = `
+                <p style="font-weight: bold; margin-bottom: 5px;">${q.text}</p>
+                <p style="font-size: 0.85rem; color: gray;">A: ${q.option_a} / B: ${q.option_b}</p>
+                <button onclick="deleteMyQuestion(${q.id})" style="background-color: #e74c3c; margin-top: 10px; padding: 5px 10px; font-size: 0.8rem; width: auto; color: white; border: none; border-radius: 3px; cursor: pointer;">削除</button>
+            `;
+            listContainer.appendChild(div);
+        });
+    } catch (e) {
+        listContainer.innerHTML = '<p>エラーが発生しました。</p>';
+    }
+}
+
+// 自分の投稿を削除する
+async function deleteMyQuestion(id) {
+    if (!confirm('本当にこの質問を削除しますか？')) return;
+    try {
+        const res = await fetch(`${API_BASE_URL}delete/question/${id}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        if (res.ok) {
+            alert('削除しました。');
+            loadMyQuestions(); // 一覧を再読み込み
+        } else {
+            const data = await res.json();
+            alert(`削除に失敗しました: ${data.error || '原因不明'}`);
+        }
+    } catch (e) {
+        alert('通信エラーが発生しました。');
+    }
+}
+
 /** 新しい性格軸（診断項目）の追加 */
 async function addUserPersonality() {
     const name = document.getElementById('user-p-name').value.trim();

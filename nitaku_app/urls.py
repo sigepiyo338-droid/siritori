@@ -11,4 +11,6 @@ urlpatterns = [
     path('api/post/personality', views.post_personality, name='post_personality'),
     path('api/answer', views.submit_answer, name='submit_answer'),
     path('api/radar-scores', views.radar_scores, name='radar_scores'),
+    path('api/my_questions', views.my_questions, name='my_questions'),
+    path('api/delete/question/<int:question_id>', views.delete_question, name='delete_question'),
 ]

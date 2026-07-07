@@ -76,17 +76,81 @@ def post_question(request):
         option_b = body.get('option_b', '').strip()
         author = body.get('author', 'ゲスト').strip() or 'ゲスト'
 
+        posted_by = request.user.username if request.user.is_authenticated else None
+
         if not text or not option_a or not option_b:
             return JsonResponse({'error': '必須項目が不足しています'}, status=400)
 
         conn = get_db()
         conn.execute(
-            'INSERT INTO questions (text, option_a, option_b, author) VALUES (?, ?, ?, ?)',
-            (text, option_a, option_b, author),
+            'INSERT INTO questions (text, option_a, option_b, author, posted_by) VALUES (?, ?, ?, ?, ?)',
+            (text, option_a, option_b, author, posted_by),
         )
         conn.commit()
         conn.close()
         return JsonResponse({'message': '質問を登録しました'})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+def my_questions(request):
+    """ログインユーザーが投稿した質問一覧を返す API"""
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': 'ログインが必要です'}, status=401)
+        
+    try:
+        conn = get_db()
+        rows = conn.execute(
+            'SELECT id, text, option_a, option_b, author FROM questions WHERE posted_by = ? ORDER BY id DESC',
+            (request.user.username,)
+        ).fetchall()
+        conn.close()
+        
+        data = [
+            {
+                'id': r['id'],
+                'text': r['text'],
+                'option_a': r['option_a'],
+                'option_b': r['option_b'],
+                'author': r['author'],
+            }
+            for r in rows
+        ]
+        return JsonResponse(data, safe=False, json_dumps_params={'ensure_ascii': False})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@csrf_exempt
+@require_POST
+def delete_question(request, question_id):
+    """ログインユーザーが自分の投稿を削除する API"""
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': 'ログインが必要です'}, status=401)
+        
+    try:
+        conn = get_db()
+        # まず対象の質問が存在し、投稿者が自分であるか確認
+        row = conn.execute(
+            'SELECT id FROM questions WHERE id = ? AND posted_by = ?',
+            (question_id, request.user.username)
+        ).fetchone()
+        
+        if not row:
+            conn.close()
+            return JsonResponse({'error': '削除権限がないか、質問が存在しません'}, status=403)
+            
+        # 関連するscoresを削除
+        conn.execute('DELETE FROM scores WHERE question_id = ?', (question_id,))
+        # 関連するanswersを削除
+        conn.execute('DELETE FROM answers WHERE question_id = ?', (question_id,))
+        # 質問本体を削除
+        conn.execute('DELETE FROM questions WHERE id = ?', (question_id,))
+        
+        conn.commit()
+        conn.close()
+        
+        return JsonResponse({'message': '質問を削除しました'})
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 
