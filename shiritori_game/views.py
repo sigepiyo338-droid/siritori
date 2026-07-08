@@ -83,7 +83,6 @@ def delete_image(request, image_id):
     ログインユーザーが自身で投稿した画像を削除するビュー
     """
     from django.shortcuts import get_object_or_404
-    from django.views.decorators.http import require_POST
     
     if request.method != 'POST':
         messages.error(request, '不正なリクエスト方法です。')
