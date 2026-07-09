@@ -477,7 +477,8 @@
         </div>
 
         <!-- 掲示板 -->
-        <div style="display: flex; justify-content: center; margin-top: 2.5rem; width: 100%;">
+        <!-- 掲示板 -->
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 1rem; margin-top: 2.5rem; width: 100%;">
             {% if user.is_authenticated %}
             <a class="app-card card-shiritori" href="{% url 'board:board_list' %}"
                 style="width: 100%; max-width: 500px; padding: 1rem 1.5rem; flex-direction: row; justify-content: center; align-items: center; min-height: unset; gap: 0.5rem;">
@@ -489,6 +490,13 @@
                 <p class="card-name" style="margin: 0; font-size: 1.1rem; color: var(--card-accent);">簡易掲示板（要ログイン）</p>
             </a>
             {% endif %}
+
+            <!-- デベロッパー・リクルーター様向け資料 -->
+            <a class="app-card" href="{% url 'developer_info' %}"
+                style="width: 100%; max-width: 500px; padding: 1rem 1.5rem; flex-direction: row; justify-content: center; align-items: center; min-height: unset; gap: 0.5rem; background: linear-gradient(135deg, #4f46e5, #7c3aed); box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3);">
+                <i class="fa-solid fa-file-pdf" style="color: white; font-size: 1.2rem;"></i>
+                <p class="card-name" style="margin: 0; font-size: 1.1rem; color: white;">デベロッパー・リクルーター様向け資料</p>
+            </a>
         </div>
 
         <!-- フッター -->
