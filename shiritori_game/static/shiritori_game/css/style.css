@@ -262,18 +262,13 @@ body {
     transition: var(--transition-smooth);
 }
 
-.reading-hint {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: linear-gradient(transparent, rgba(15, 23, 42, 0.75));
-    padding: 1.5rem 0.5rem 0.75rem 0.5rem;
+.reading-display {
     font-size: 1.5rem;
-    font-weight: 700;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin: 1rem 0 0.5rem 0;
     letter-spacing: 2px;
-    color: #fff;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    text-align: center;
 }
 
 .card-info {
