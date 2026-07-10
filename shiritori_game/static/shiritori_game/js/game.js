@@ -240,11 +240,10 @@ document.addEventListener('DOMContentLoaded', () => {
         correctReadingObj = correctChoice.readings.find(r => normalizeLetter(r.reading.charAt(0)) === nextLetter);
         correctReading = correctReadingObj;
 
-        // 2. ダミーの選択肢（正解以外の画像）を最大3つ選ぶ
-        // ダミーの条件: 正解画像ではなく、かつ現在のお題のつなぎ文字から始まらないもの（使用済み画像もダミーに含める）
+        // 2. ダミーの選択肢（正解以外の画像）を最大8つ選ぶ
+        // ダミーの条件: 正解画像以外のすべての画像（正解となる読み方を持つ画像もダミーとして出現しうる）
         const dummyCandidates = allImages.filter(img => 
-            img.id !== correctChoice.id &&
-            !img.readings.some(r => normalizeLetter(r.reading.charAt(0)) === nextLetter)
+            img.id !== correctChoice.id
         );
 
         // ランダムにシャッフルして最大8つ（3x3マス用）選ぶ
@@ -323,7 +322,10 @@ document.addEventListener('DOMContentLoaded', () => {
     function handleChoiceClick(clickedImgData) {
         if (!correctChoice) return;
 
-        if (clickedImgData.id === correctChoice.id) {
+        const nextLetter = getNextRequiredLetter(currentWord);
+        const validReadingObj = clickedImgData.readings.find(r => normalizeLetter(r.reading.charAt(0)) === nextLetter);
+
+        if (validReadingObj) {
             // 正解の場合
             combo++;
             if (combo > maxCombo) {
@@ -340,8 +342,8 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => scoreBox.style.transform = 'scale(1)', 200);
 
             // しりとりルール：「ん」で終わる単語を選んでしまった場合はゲームオーバー（許可設定OFFのときのみ）
-            const lastLetter = correctReading.reading.slice(-1);
-            const resolvedName = correctReading.display_name || correctReading.reading;
+            const lastLetter = validReadingObj.reading.slice(-1);
+            const resolvedName = validReadingObj.display_name || validReadingObj.reading;
             const allowNn = localStorage.getItem('shiritori_allow_nn') === 'true';
             if (lastLetter === 'ん' && !allowNn) {
                 setTimeout(() => {
@@ -354,7 +356,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const isFinal = questionLimit > 0 && currentQuestionCount >= questionLimit;
 
             // 正解ポップアップを表示
-            showCorrectAnswerPopup(correctChoice, correctReading, isFinal);
+            showCorrectAnswerPopup(clickedImgData, validReadingObj, isFinal);
         } else {
             // 不正解（お手つき）の場合
             combo = 0;
