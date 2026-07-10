@@ -241,10 +241,16 @@ document.addEventListener('DOMContentLoaded', () => {
         correctReading = correctReadingObj;
 
         // 2. ダミーの選択肢（正解以外の画像）を最大8つ選ぶ
-        // ダミーの条件: 正解画像以外のすべての画像（正解となる読み方を持つ画像もダミーとして出現しうる）
-        const dummyCandidates = allImages.filter(img => 
-            img.id !== correctChoice.id
-        );
+        // ダミーの条件: 正解画像以外のすべての画像
+        // ※ただし「すでに使用済み」かつ「今回の正解の文字から始まる」画像はプレイヤーの罠になるため除外する
+        const dummyCandidates = allImages.filter(img => {
+            if (img.id === correctChoice.id) return false;
+            
+            const isUsed = usedImageIds.has(img.id);
+            const canConnect = img.readings.some(r => normalizeLetter(r.reading.charAt(0)) === nextLetter);
+            
+            return !(isUsed && canConnect);
+        });
 
         // ランダムにシャッフルして最大8つ（3x3マス用）選ぶ
         const shuffledDummies = shuffleArray([...dummyCandidates]);
