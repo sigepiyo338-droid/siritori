@@ -10,6 +10,7 @@ import json
 import webbrowser
 from pathlib import Path
 from urllib.request import urlopen
+import ssl
 
 import tkinter as tk
 from tkinter import messagebox, ttk
@@ -146,7 +147,8 @@ def update_nitaku_meta(version: str, updated: str) -> None:
 
 def sync_db(url: str, db_path: Path) -> None:
     db_path.parent.mkdir(parents=True, exist_ok=True)
-    with urlopen(url, timeout=20) as response:
+    context = ssl._create_unverified_context()
+    with urlopen(url, timeout=20, context=context) as response:
         data = response.read()
     if not data:
         raise ValueError("ダウンロードしたDBが空です。")
