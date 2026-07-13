@@ -18,7 +18,6 @@ import os
 
 
 # パスの設定
-# C:\Users\frontier-Pythin\Documents または C:\Users\frontier-Pythin\Documents\siritori
 # どちらから実行されても動作するように親ディレクトリと子ディレクトリの両方をチェックする
 BASE_DIR = Path(__file__).resolve().parent
 if (BASE_DIR / "siritori").exists():
