@@ -66,9 +66,10 @@ class AuthViewsTestCase(TestCase):
         img_file1.name = 'test_image_large.png'
         img_file1.seek(0)
         
+        import json
         response1 = self.client.post(reverse('shiritori_game:image_upload'), {
             'image': img_file1,
-            'reading': 'てすと'
+            'reading': json.dumps([{'reading': 'てすと', 'display_name': ''}], ensure_ascii=False)
         })
         self.assertRedirects(response1, reverse('shiritori_game:game_index'))
         
@@ -87,7 +88,7 @@ class AuthViewsTestCase(TestCase):
         
         response2 = self.client.post(reverse('shiritori_game:image_upload'), {
             'image': img_file2,
-            'reading': 'ちいさい'
+            'reading': json.dumps([{'reading': 'ちいさい', 'display_name': ''}], ensure_ascii=False)
         })
         self.assertRedirects(response2, reverse('shiritori_game:game_index'))
         
@@ -106,9 +107,14 @@ class AuthViewsTestCase(TestCase):
         img_file.name = 'test_display_name.png'
         img_file.seek(0)
         
+        import json
         response = self.client.post(reverse('shiritori_game:image_upload'), {
             'image': img_file,
-            'reading': 'りんご:林檎, あっぷる:Apple, ごりら'
+            'reading': json.dumps([
+                {'reading': 'りんご', 'display_name': '林檎'},
+                {'reading': 'あっぷる', 'display_name': 'Apple'},
+                {'reading': 'ごりら', 'display_name': ''}
+            ], ensure_ascii=False)
         })
         self.assertRedirects(response, reverse('shiritori_game:game_index'))
         
@@ -137,9 +143,16 @@ class AuthViewsTestCase(TestCase):
         img_file.name = 'test.png'
         img_file.seek(0)
         
+        import json
         response = self.client.post(reverse('shiritori_game:image_upload'), {
             'image': img_file,
-            'reading': 'いち, に, さん, よん, ご'
+            'reading': json.dumps([
+                {'reading': 'いち', 'display_name': ''},
+                {'reading': 'に', 'display_name': ''},
+                {'reading': 'さん', 'display_name': ''},
+                {'reading': 'よん', 'display_name': ''},
+                {'reading': 'ご', 'display_name': ''}
+            ], ensure_ascii=False)
         })
         self.assertRedirects(response, reverse('shiritori_game:game_index'))
         
@@ -157,9 +170,17 @@ class AuthViewsTestCase(TestCase):
         img_file.name = 'test.png'
         img_file.seek(0)
         
+        import json
         response = self.client.post(reverse('shiritori_game:image_upload'), {
             'image': img_file,
-            'reading': 'いち, に, さん, よん, ご, ろく'
+            'reading': json.dumps([
+                {'reading': 'いち', 'display_name': ''},
+                {'reading': 'に', 'display_name': ''},
+                {'reading': 'さん', 'display_name': ''},
+                {'reading': 'よん', 'display_name': ''},
+                {'reading': 'ご', 'display_name': ''},
+                {'reading': 'ろく', 'display_name': ''}
+            ], ensure_ascii=False)
         })
         self.assertEqual(response.status_code, 200)
         form = response.context['form']
@@ -194,9 +215,10 @@ class AuthViewsTestCase(TestCase):
         img_file.name = 'test_owner.png'
         img_file.seek(0)
         
+        import json
         response = self.client.post(reverse('shiritori_game:image_upload'), {
             'image': img_file,
-            'reading': 'あるじ'
+            'reading': json.dumps([{'reading': 'あるじ', 'display_name': ''}], ensure_ascii=False)
         })
         self.assertRedirects(response, reverse('shiritori_game:game_index'))
         
