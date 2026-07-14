@@ -725,24 +725,61 @@ def build_ui() -> tk.Tk:
 
     update_debug_label()
 
+    def handle_setup_env() -> None:
+        status_var.set("セットアップを開始します...")
+        setup_btn.config(state="disabled")
+        
+        def run_setup():
+            try:
+                creationflags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
+                
+                status_var.set("仮想環境(.venv)を作成中...")
+                subprocess.run([sys.executable, "-m", "venv", ".venv"], check=True, cwd=str(PROJECT_DIR), creationflags=creationflags)
+                
+                status_var.set("requirements.txt をインストール中...")
+                venv_pip = PROJECT_DIR / ".venv" / "Scripts" / "pip.exe"
+                if not venv_pip.exists():
+                    venv_pip = PROJECT_DIR / ".venv" / "bin" / "pip"
+                subprocess.run([str(venv_pip), "install", "-r", "requirements.txt"], check=True, cwd=str(PROJECT_DIR), creationflags=creationflags)
+                
+                status_var.set("セットアップが完了しました！")
+                messagebox.showinfo("成功", "初期セットアップが完了しました。\n「ローカル起動」をお試しください。")
+            except Exception as e:
+                status_var.set(f"セットアップ失敗: {e}")
+                messagebox.showerror("エラー", f"セットアップに失敗しました:\n{e}")
+            finally:
+                setup_btn.config(state="normal")
+        
+        import threading
+        threading.Thread(target=run_setup, daemon=True).start()
+
+    # 0. 初期セットアップボタン
+    setup_btn = ttk.Button(test_tab, text="初期セットアップ (モジュールインストール)", command=handle_setup_env)
+    setup_btn.grid(row=0, column=0, sticky="w", pady=(0, 4))
+    
+    ttk.Label(
+        test_tab,
+        text="※ 初めてローカル起動を行う前に1回だけ実行してください",
+    ).grid(row=1, column=0, sticky="w", pady=(0, 12))
+
     # 1. ローカル起動ボタン
     ttk.Button(test_tab, text="ローカル起動", command=handle_run_app_py).grid(
-        row=1, column=0, sticky="w"
+        row=2, column=0, sticky="w"
     )
     # 2. ローカル起動説明文
     ttk.Label(
         test_tab,
         text="※ Django開発サーバーはバックグラウンドで起動します。",
-    ).grid(row=2, column=0, sticky="w", pady=(6, 12))
+    ).grid(row=3, column=0, sticky="w", pady=(6, 12))
 
     # 3. 実行対象ラベル
     ttk.Label(test_tab, text=f"実行対象: {PROJECT_DIR / 'manage.py'}").grid(
-        row=3, column=0, sticky="w", pady=(0, 8)
+        row=4, column=0, sticky="w", pady=(0, 8)
     )
 
     # 4. DEBUGモードフレーム
     debug_frame = ttk.LabelFrame(test_tab, text="Django設定 (DEBUG)", style="Manager.TFrame", padding=8)
-    debug_frame.grid(row=4, column=0, sticky="ew", pady=(0, 12))
+    debug_frame.grid(row=5, column=0, sticky="ew", pady=(0, 12))
     debug_frame.columnconfigure(0, weight=1)
 
     ttk.Checkbutton(
