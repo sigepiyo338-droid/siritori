@@ -737,10 +737,10 @@ def build_ui() -> tk.Tk:
                 subprocess.run([sys.executable, "-m", "venv", ".venv"], check=True, cwd=str(PROJECT_DIR), creationflags=creationflags)
                 
                 status_var.set("requirements.txt をインストール中...")
-                venv_pip = PROJECT_DIR / ".venv" / "Scripts" / "pip.exe"
-                if not venv_pip.exists():
-                    venv_pip = PROJECT_DIR / ".venv" / "bin" / "pip"
-                subprocess.run([str(venv_pip), "install", "-r", "requirements.txt"], check=True, cwd=str(PROJECT_DIR), creationflags=creationflags)
+                venv_python = PROJECT_DIR / ".venv" / "Scripts" / "python.exe"
+                if not venv_python.exists():
+                    venv_python = PROJECT_DIR / ".venv" / "bin" / "python"
+                subprocess.run([str(venv_python), "-m", "pip", "install", "-r", "requirements.txt"], check=True, cwd=str(PROJECT_DIR), creationflags=creationflags)
                 
                 status_var.set("セットアップが完了しました！")
                 messagebox.showinfo("成功", "初期セットアップが完了しました。\n「ローカル起動」をお試しください。")
