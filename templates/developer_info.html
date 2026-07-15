@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,6 +16,7 @@
             min-height: 100vh;
             margin: 0;
         }
+
         .container {
             text-align: center;
             background: white;
@@ -22,6 +24,7 @@
             border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
         }
+
         .btn-group {
             display: flex;
             flex-direction: column;
@@ -29,6 +32,7 @@
             align-items: center;
             margin-top: 2rem;
         }
+
         .btn-primary {
             display: inline-block;
             background-color: #10b981;
@@ -41,10 +45,12 @@
             transition: background-color 0.2s, transform 0.2s;
             box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
         }
+
         .btn-primary:hover {
             background-color: #059669;
             transform: translateY(-2px);
         }
+
         .btn-github {
             display: inline-block;
             background-color: #24292e;
@@ -57,10 +63,12 @@
             transition: background-color 0.2s, transform 0.2s;
             box-shadow: 0 4px 10px rgba(36, 41, 46, 0.3);
         }
+
         .btn-github:hover {
             background-color: #1b1f23;
             transform: translateY(-2px);
         }
+
         .btn-back {
             display: inline-block;
             background-color: #64748b;
@@ -72,31 +80,41 @@
             font-size: 1rem;
             transition: background-color 0.2s, transform 0.2s;
         }
+
         .btn-back:hover {
             background-color: #475569;
             transform: translateY(-2px);
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <h1 style="margin-top: 0; margin-bottom: 2rem; color: #1e293b;">デベロッパー・リクルーター様向け資料</h1>
-        
+
         <div class="btn-group">
-            <a href="https://sigepiyo338.pythonanywhere.com/media/sihankun-playguide.pdf" target="_blank" rel="noopener noreferrer" class="btn-primary">
-                しりとり師範くん遊び方ガイド
+            <a href="https://sigepiyo338.pythonanywhere.com/media/sihankun-playguide.pdf" target="_blank"
+                rel="noopener noreferrer" class="btn-primary">
+                しりとり師範くんの遊び方ガイド
             </a>
-            
-            <a href="https://sigepiyo338.pythonanywhere.com/media/sihankun-overview.pdf" target="_blank" rel="noopener noreferrer" class="btn-primary">
-                しりとり師範くん 簡易仕様書
+            <a href="https://sigepiyo338.pythonanywhere.com/media/sihankun-overview.pdf" target="_blank"
+                rel="noopener noreferrer" class="btn-primary">
+                しりとり師範くんの紹介（簡易仕様書）
             </a>
-            
-            <a href="https://github.com/sigepiyo338-droid/siritori" target="_blank" rel="noopener noreferrer" class="btn-github">
+
+            <a href="https://sigepiyo338.pythonanywhere.com/media/sihankun-detail.pdf" target="_blank"
+                rel="noopener noreferrer" class="btn-primary">
+                しりとり師範くんの詳細技術資料
+            </a>
+
+            <a href="https://github.com/sigepiyo338-droid/siritori" target="_blank" rel="noopener noreferrer"
+                class="btn-github">
                 GitHubリポジトリ
             </a>
-            
+
             <a href="{% url 'landing' %}" class="btn-back">戻る</a>
         </div>
     </div>
 </body>
+
 </html>
