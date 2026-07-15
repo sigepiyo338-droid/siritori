@@ -289,6 +289,23 @@ def open_main_screen_in_app_mode(url: str) -> bool:
     return True
 
 
+def kill_processes_on_port(port: int) -> None:
+    if sys.platform != "win32":
+        return
+    try:
+        result = subprocess.run(["netstat", "-ano"], capture_output=True, text=True, creationflags=subprocess.CREATE_NO_WINDOW)
+        pids = set()
+        for line in result.stdout.splitlines():
+            if f":{port} " in line and "LISTENING" in line:
+                parts = line.split()
+                if len(parts) >= 5:
+                    pids.add(parts[-1])
+        for pid in pids:
+            if pid != "0":
+                subprocess.run(["taskkill", "/F", "/PID", pid], capture_output=True, creationflags=subprocess.CREATE_NO_WINDOW)
+    except Exception:
+        pass
+
 
 def build_ui() -> tk.Tk:
     root = tk.Tk()
@@ -645,7 +662,7 @@ def build_ui() -> tk.Tk:
     # ---- 3. テストタブ ----
     test_tab = ttk.Frame(notebook, style="Manager.TFrame", padding=12)
     test_tab.columnconfigure(0, weight=1)
-    notebook.add(test_tab, text="テスト")
+    notebook.insert(0, test_tab, text="テスト")
     app_server_process: subprocess.Popen | None = None
 
     def handle_run_app_py() -> None:
@@ -660,6 +677,7 @@ def build_ui() -> tk.Tk:
         python_executable = str(venv_python) if venv_python.exists() else sys.executable
 
         try:
+            kill_processes_on_port(8000)
             if app_server_process is None or app_server_process.poll() is not None:
                 creationflags = 0
                 if sys.platform == "win32":
@@ -800,8 +818,7 @@ def build_ui() -> tk.Tk:
         row=1, column=0, sticky="w", pady=(10, 0)
     )
 
-    major_spin.focus_set()
-    updated_entry.icursor(tk.END)
+    notebook.select(test_tab)
 
     # 終了時のサーバー停止処理
     def on_closing():
