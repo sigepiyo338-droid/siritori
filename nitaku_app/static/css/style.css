@@ -89,11 +89,6 @@ canvas {
 
 /* トップメニューのボタン個別設定 */
 
-/* 1. 設定ボタン：パステルピンク */
-#btn-settings {
-    background-color: #ffdae9; 
-    color: #444;
-}
 
 /* 2. 診断開始ボタン：パステルブルー（大きく強調） */
 #btn-start {
@@ -105,11 +100,6 @@ canvas {
     margin: 15px 0;   /* 上下の余白を広げて目立たせる */
 }
 
-/* 3. 投稿ボタン：パステルグリーン */
-#btn-post {
-    background-color: #d4f5d4;
-    color: #444;
-}
 
 /* 4. その他ボタン：パステルラベンダー */
 #btn-other {
@@ -125,9 +115,7 @@ canvas {
 }
 
 /* ホバー時（マウスを乗せた時）に少し色を濃くする演出 */
-#btn-settings:hover { background-color: #ffc2d1; }
 #btn-start:hover { background-color: #b3d9ff; }
-#btn-post:hover { background-color: #bdf0bd; }
 #btn-other:hover { background-color: #d8c8ff; }
 
 /* メニュー画面（#menu-page）内のボタンだけ間隔を広げる */
@@ -151,34 +139,6 @@ canvas {
     text-decoration: underline;
 }
 
-/* ダウンロードリンクのスタイル */
-.download-link {
-    position: absolute;
-    top: 10px;
-    right: 15px;
-    font-size: 0.7rem;
-    color: #95a5a6; /* 控えめなグレー */
-    text-decoration: none;
-    border: 1px solid #eee;
-    padding: 2px 8px;
-    border-radius: 4px;
-    transition: all 0.2s ease;
-}
-
-.download-link:hover {
-    background-color: #f8f9fa;
-    color: #34495e;
-    border-color: #bdc3c7;
-}
-
-/* モバイル対応：画面が狭い時も邪魔にならないように調整 */
-@media (max-width: 480px) {
-    .download-link {
-        top: 5px;
-        right: 10px;
-        font-size: 0.6rem;
-    }
-}
 
 /* --- トップ画面の画像調整 --- */
 #title-image {
