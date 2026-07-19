@@ -289,6 +289,23 @@ def open_main_screen_in_app_mode(url: str) -> bool:
     return True
 
 
+def kill_processes_on_port(port: int) -> None:
+    if sys.platform != "win32":
+        return
+    try:
+        result = subprocess.run(["netstat", "-ano"], capture_output=True, text=True, creationflags=subprocess.CREATE_NO_WINDOW)
+        pids = set()
+        for line in result.stdout.splitlines():
+            if f":{port} " in line and "LISTENING" in line:
+                parts = line.split()
+                if len(parts) >= 5:
+                    pids.add(parts[-1])
+        for pid in pids:
+            if pid != "0":
+                subprocess.run(["taskkill", "/F", "/PID", pid], capture_output=True, creationflags=subprocess.CREATE_NO_WINDOW)
+    except Exception:
+        pass
+
 
 def build_ui() -> tk.Tk:
     root = tk.Tk()
@@ -645,7 +662,7 @@ def build_ui() -> tk.Tk:
     # ---- 3. テストタブ ----
     test_tab = ttk.Frame(notebook, style="Manager.TFrame", padding=12)
     test_tab.columnconfigure(0, weight=1)
-    notebook.add(test_tab, text="テスト")
+    notebook.insert(0, test_tab, text="テスト")
     app_server_process: subprocess.Popen | None = None
 
     def handle_run_app_py() -> None:
@@ -660,6 +677,7 @@ def build_ui() -> tk.Tk:
         python_executable = str(venv_python) if venv_python.exists() else sys.executable
 
         try:
+            kill_processes_on_port(8000)
             if app_server_process is None or app_server_process.poll() is not None:
                 creationflags = 0
                 if sys.platform == "win32":
@@ -725,24 +743,61 @@ def build_ui() -> tk.Tk:
 
     update_debug_label()
 
+    def handle_setup_env() -> None:
+        status_var.set("セットアップを開始します...")
+        setup_btn.config(state="disabled")
+        
+        def run_setup():
+            try:
+                creationflags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
+                
+                status_var.set("仮想環境(.venv)を作成中...")
+                subprocess.run([sys.executable, "-m", "venv", ".venv"], check=True, cwd=str(PROJECT_DIR), creationflags=creationflags)
+                
+                status_var.set("requirements.txt をインストール中...")
+                venv_python = PROJECT_DIR / ".venv" / "Scripts" / "python.exe"
+                if not venv_python.exists():
+                    venv_python = PROJECT_DIR / ".venv" / "bin" / "python"
+                subprocess.run([str(venv_python), "-m", "pip", "install", "-r", "requirements.txt"], check=True, cwd=str(PROJECT_DIR), creationflags=creationflags)
+                
+                status_var.set("セットアップが完了しました！")
+                messagebox.showinfo("成功", "初期セットアップが完了しました。\n「ローカル起動」をお試しください。")
+            except Exception as e:
+                status_var.set(f"セットアップ失敗: {e}")
+                messagebox.showerror("エラー", f"セットアップに失敗しました:\n{e}")
+            finally:
+                setup_btn.config(state="normal")
+        
+        import threading
+        threading.Thread(target=run_setup, daemon=True).start()
+
+    # 0. 初期セットアップボタン
+    setup_btn = ttk.Button(test_tab, text="初期セットアップ (モジュールインストール)", command=handle_setup_env)
+    setup_btn.grid(row=0, column=0, sticky="w", pady=(0, 4))
+    
+    ttk.Label(
+        test_tab,
+        text="※ 初めてローカル起動を行う前に1回だけ実行してください",
+    ).grid(row=1, column=0, sticky="w", pady=(0, 12))
+
     # 1. ローカル起動ボタン
     ttk.Button(test_tab, text="ローカル起動", command=handle_run_app_py).grid(
-        row=1, column=0, sticky="w"
+        row=2, column=0, sticky="w"
     )
     # 2. ローカル起動説明文
     ttk.Label(
         test_tab,
         text="※ Django開発サーバーはバックグラウンドで起動します。",
-    ).grid(row=2, column=0, sticky="w", pady=(6, 12))
+    ).grid(row=3, column=0, sticky="w", pady=(6, 12))
 
     # 3. 実行対象ラベル
     ttk.Label(test_tab, text=f"実行対象: {PROJECT_DIR / 'manage.py'}").grid(
-        row=3, column=0, sticky="w", pady=(0, 8)
+        row=4, column=0, sticky="w", pady=(0, 8)
     )
 
     # 4. DEBUGモードフレーム
     debug_frame = ttk.LabelFrame(test_tab, text="Django設定 (DEBUG)", style="Manager.TFrame", padding=8)
-    debug_frame.grid(row=4, column=0, sticky="ew", pady=(0, 12))
+    debug_frame.grid(row=5, column=0, sticky="ew", pady=(0, 12))
     debug_frame.columnconfigure(0, weight=1)
 
     ttk.Checkbutton(
@@ -763,8 +818,7 @@ def build_ui() -> tk.Tk:
         row=1, column=0, sticky="w", pady=(10, 0)
     )
 
-    major_spin.focus_set()
-    updated_entry.icursor(tk.END)
+    notebook.select(test_tab)
 
     # 終了時のサーバー停止処理
     def on_closing():

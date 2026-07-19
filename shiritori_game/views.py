@@ -16,7 +16,6 @@ def image_upload(request):
     if request.method == 'POST':
         form = ImageUploadForm(request.POST, request.FILES)
         if form.is_valid():
-            # GameImageオブジェクトを作成（未承認状態）
             game_image = form.save(commit=False)
             game_image.is_approved = False
             game_image.user = request.user
@@ -32,7 +31,6 @@ def image_upload(request):
                 original_format = img.format if img.format else 'PNG'
                 width, height = img.size
                 
-                # 1. 正方形クロップ
                 if width != height:
                     size = min(width, height)
                     left = (width - size) // 2
@@ -45,11 +43,9 @@ def image_upload(request):
                 if img.size[0] > 600:
                     img = img.resize((600, 600), Image.Resampling.LANCZOS)
                 
-                # メモリ上バッファへ保存
                 buffer = io.BytesIO()
                 img.save(buffer, format=original_format)
                 
-                # フィールド値を新しいバイナリで更新
                 filename = uploaded_image.name
                 game_image.image.save(filename, ContentFile(buffer.getvalue()), save=False)
                 
@@ -97,7 +93,6 @@ def delete_image(request, image_id):
     game_image.delete()
     messages.success(request, '画像を削除しました。')
     
-    # 管理者が他人の画像を削除した場合は全画像一覧へ戻る
     if request.user.is_superuser and game_image.user != request.user:
         return redirect('shiritori_game:all_users_images')
     return redirect('shiritori_game:my_images')
@@ -122,7 +117,6 @@ def edit_image(request, image_id):
         if form.is_valid():
             form.save()
             
-            # 既存の読み方をクリアして再登録
             game_image.readings.all().delete()
             readings = form.cleaned_data['reading']
             for reading, display_name in readings:
@@ -133,7 +127,6 @@ def edit_image(request, image_id):
                 return redirect('shiritori_game:all_users_images')
             return redirect('shiritori_game:my_images')
     else:
-        # 現在の読み方をJSON文字列にして初期値としてセット
         existing_readings = [
             {'reading': r.reading, 'display_name': r.display_name or ''}
             for r in game_image.readings.all()
@@ -217,7 +210,6 @@ def user_register(request):
         form = UserRegistrationForm(request.POST)
         if form.is_valid():
             user = form.save()
-            # 登録後、自動でログインする
             auth_login(request, user)
             messages.success(request, f'ようこそ、{user.username}さん！アカウントが作成されました。')
             return redirect('landing')

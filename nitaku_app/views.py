@@ -6,7 +6,6 @@ from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
 import json
 
-# nitaku_app の SQLite DB パス（Flask 時代からの instance/database.db）
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.join(BASE_DIR, 'instance', 'database.db')
 
@@ -140,11 +139,8 @@ def delete_question(request, question_id):
             conn.close()
             return JsonResponse({'error': '削除権限がないか、質問が存在しません'}, status=403)
             
-        # 関連するscoresを削除
         conn.execute('DELETE FROM scores WHERE question_id = ?', (question_id,))
-        # 関連するanswersを削除
         conn.execute('DELETE FROM answers WHERE question_id = ?', (question_id,))
-        # 質問本体を削除
         conn.execute('DELETE FROM questions WHERE id = ?', (question_id,))
         
         conn.commit()
@@ -226,9 +222,7 @@ def delete_personality(request, personality_id):
             conn.close()
             return JsonResponse({'error': '削除権限がないか、性格が存在しません'}, status=403)
             
-        # 関連するscoresの削除
         conn.execute('DELETE FROM scores WHERE personality_id = ?', (personality_id,))
-        # 自身を削除
         conn.execute('DELETE FROM personalities WHERE id = ?', (personality_id,))
         
         conn.commit()
@@ -254,13 +248,11 @@ def submit_answer(request):
 
         conn = get_db()
 
-        # 回答を記録
         conn.execute(
             'INSERT INTO answers (question_id, choice) VALUES (?, ?)',
             (question_id, choice),
         )
 
-        # 性格スコアを更新
         for pid in personality_ids:
             existing = conn.execute(
                 'SELECT id FROM scores WHERE question_id=? AND personality_id=? AND option=?',
@@ -280,7 +272,6 @@ def submit_answer(request):
         conn.commit()
         conn.close()
 
-        # 集計結果を返す
         conn = get_db()
         total_a = conn.execute(
             'SELECT COUNT(*) as cnt FROM answers WHERE question_id=? AND choice="A"',

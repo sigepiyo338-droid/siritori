@@ -219,7 +219,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const validStartImages = allImages.filter(img => {
             const firstReadingObj = img.readings[0];
             const firstReading = firstReadingObj ? firstReadingObj.reading : '';
-            return firstReading && firstReading.slice(-1) !== 'ん';
+            if (!firstReading) return false;
+            let lastChar = firstReading.slice(-1);
+            if (lastChar === 'ー' && firstReading.length > 1) {
+                lastChar = firstReading.slice(-2, -1);
+            }
+            return normalizeLetter(lastChar) !== 'ん';
         });
 
         const candidateImages = validStartImages.length > 0 ? validStartImages : allImages;
@@ -269,9 +274,13 @@ document.addEventListener('DOMContentLoaded', () => {
             img.readings.some(r => normalizeLetter(r.reading.charAt(0)) === nextLetter)
         );
 
-        // 正解候補がない場合はゲームクリア！
+        // 正解候補がない場合はゲーム終了（クリアまたは行き止まり）
         if (correctCandidates.length === 0) {
-            endGame(true);
+            if (usedImageIds.size >= allImages.length) {
+                endGame(true);
+            } else {
+                endGame(false, `次につながる画像がありませんでした（行き止まり）！`);
+            }
             return;
         }
 
@@ -395,10 +404,13 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => scoreBox.style.transform = 'scale(1)', 200);
 
             // しりとりルール：「ん」で終わる単語を選んでしまった場合はゲームオーバー（許可設定OFFのときのみ）
-            const lastLetter = validReadingObj.reading.slice(-1);
+            let effectiveLastLetter = validReadingObj.reading.slice(-1);
+            if (effectiveLastLetter === 'ー' && validReadingObj.reading.length > 1) {
+                effectiveLastLetter = validReadingObj.reading.slice(-2, -1);
+            }
             const resolvedName = validReadingObj.display_name || validReadingObj.reading;
             const allowNn = localStorage.getItem('shiritori_allow_nn') === 'true';
-            if (lastLetter === 'ん' && !allowNn) {
+            if (normalizeLetter(effectiveLastLetter) === 'ん' && !allowNn) {
                 setTimeout(() => {
                     endGame(false, `「${resolvedName}」の最後が「ん」で終わってしまいました！`);
                 }, 300);
