@@ -326,4 +326,36 @@ class AuthViewsTestCase(TestCase):
 
 
 
+class EncyclopediaTestCase(TestCase):
+    def setUp(self):
+        self.username = 'testuser'
+        self.password = 'testpass123'
+        self.user = User.objects.create_user(username=self.username, password=self.password)
+        
+        # テストデータの作成
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        from .models import GameImage, ImageReading, UserReadingCompletion
+        
+        image_file = SimpleUploadedFile("test_enc.png", b"file_content", content_type="image/png")
+        self.game_image = GameImage.objects.create(image=image_file, is_approved=True)
+        self.reading = ImageReading.objects.create(image=self.game_image, reading='てすと', display_name='テスト')
 
+    def test_encyclopedia_anonymous(self):
+        # 未ログイン時のアクセス確認
+        response = self.client.get(reverse('shiritori_game:encyclopedia'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'shiritori_game/encyclopedia.html')
+        self.assertTrue(response.context['is_guest_or_anon'])
+
+    def test_encyclopedia_logged_in(self):
+        # ログイン時のアクセス確認
+        self.client.login(username=self.username, password=self.password)
+        
+        # 正解実績レコードの作成
+        from .models import UserReadingCompletion
+        UserReadingCompletion.objects.create(user=self.user, reading=self.reading)
+        
+        response = self.client.get(reverse('shiritori_game:encyclopedia'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'shiritori_game/encyclopedia.html')
+        self.assertFalse(response.context['is_guest_or_anon'])

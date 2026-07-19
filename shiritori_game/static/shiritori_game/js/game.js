@@ -34,6 +34,48 @@ document.addEventListener('DOMContentLoaded', () => {
     const startGameBtn = document.getElementById('start-game-btn');
     const abortGameBtn = document.getElementById('abort-game-btn');
 
+    // CSRFトークンをCookieから取得する
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    // 正解をサーバーに記録する
+    async function recordReadingCompletion(readingId) {
+        if (!window.SHIRITORI_USER_ID || window.SHIRITORI_IS_GUEST) {
+            // 未ログインまたはゲストユーザーの場合は記録しない
+            return;
+        }
+
+        try {
+            const recordUrl = window.SHIRITORI_RECORD_API || '/shiritori/api/record-correct/';
+            const response = await fetch(recordUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({ reading_id: readingId })
+            });
+
+            if (!response.ok) {
+                console.error('正解の記録に失敗しました');
+            }
+        } catch (error) {
+            console.error('記録リクエストエラー:', error);
+        }
+    }
+
     // Game variables
     let allImages = [];         // APIから取得したすべての画像データ
     let usedImageIds = new Set(); // 使用済みの画像ID
@@ -319,6 +361,11 @@ document.addEventListener('DOMContentLoaded', () => {
         combo = 0;
         comboVal.textContent = combo;
         
+        // 正解記録を送信
+        if (correctReading) {
+            recordReadingCompletion(correctReading.id);
+        }
+        
         // 正解表示へ進む
         const isFinal = questionLimit > 0 && currentQuestionCount >= questionLimit;
         showCorrectAnswerPopup(correctChoice, correctReading, isFinal);
@@ -360,6 +407,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // 出題上限に達しているか判定
             const isFinal = questionLimit > 0 && currentQuestionCount >= questionLimit;
+
+            // 正解記録を送信
+            recordReadingCompletion(validReadingObj.id);
 
             // 正解ポップアップを表示
             showCorrectAnswerPopup(clickedImgData, validReadingObj, isFinal);

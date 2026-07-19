@@ -140,3 +140,31 @@ class ImageReading(models.Model):
 
     def __str__(self):
         return f"{self.reading} (画像ID: {self.image.id})"
+
+
+class UserReadingCompletion(models.Model):
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='completed_readings',
+        verbose_name='ユーザー'
+    )
+    reading = models.ForeignKey(
+        ImageReading,
+        on_delete=models.CASCADE,
+        related_name='completed_by_users',
+        verbose_name='読み方'
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='登録日時'
+    )
+
+    class Meta:
+        verbose_name = 'ユーザー正解実績'
+        verbose_name_plural = 'ユーザー正解実績一覧'
+        unique_together = ('user', 'reading')
+
+    def __str__(self):
+        return f"{self.user.username} - {self.reading.reading} (画像ID: {self.reading.image.id})"
+

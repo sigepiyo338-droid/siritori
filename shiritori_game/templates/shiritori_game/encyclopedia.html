@@ -1,0 +1,660 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="しりとり師範くんで見つけた画像を集める自分だけの図鑑。コンプリートを目指そう！">
+    <title>しりとり図鑑 | しりとり師範くん</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Noto+Sans+JP:wght@300;400;700;900&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Base Stylesheet -->
+    <link rel="stylesheet" href="{% static 'shiritori_game/css/style.css' %}">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{% static 'img/sihankun_100t.png' %}">
+
+    <style>
+        /* 図鑑ページ専用のスタイル */
+        .encyclopedia-container {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 1rem 1.5rem 3rem;
+        }
+
+        .completion-banner {
+            background: rgba(255, 255, 255, 0.75);
+            border: 1px solid var(--border);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 1.5rem 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.03);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+        }
+
+        .completion-info {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .completion-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .completion-bar-outer {
+            width: 100%;
+            height: 12px;
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 6px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .completion-bar-inner {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-blue) 0%, var(--accent-purple) 100%);
+            border-radius: 6px;
+            transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 0; /* JS or Dynamic values */
+        }
+
+        .completion-stats {
+            text-align: right;
+            min-width: 150px;
+        }
+
+        .completion-rate-num {
+            font-size: 2.5rem;
+            font-weight: 800;
+            font-family: 'Outfit', sans-serif;
+            background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1;
+        }
+
+        .completion-ratio {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-top: 0.2rem;
+        }
+
+        /* ゲストユーザー用プロモーション案内 */
+        .promo-banner {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border: 1px solid #fcd34d;
+            border-radius: 16px;
+            padding: 1.2rem 1.8rem;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+            box-shadow: 0 4px 15px rgba(251, 191, 36, 0.15);
+        }
+
+        .promo-text {
+            color: #78350f;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+
+        .promo-text i {
+            font-size: 1.3rem;
+            color: #d97706;
+        }
+
+        .promo-actions {
+            display: flex;
+            gap: 0.8rem;
+        }
+
+        .btn-promo-login {
+            background: #d97706;
+            color: white;
+            border: none;
+            padding: 0.5rem 1.2rem;
+            border-radius: 10px;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-promo-login:hover {
+            background: #b45309;
+            transform: translateY(-2px);
+        }
+
+        .btn-promo-register {
+            background: transparent;
+            color: #78350f;
+            border: 1px solid #d97706;
+            padding: 0.5rem 1.2rem;
+            border-radius: 10px;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-promo-register:hover {
+            background: rgba(217, 119, 6, 0.1);
+            transform: translateY(-2px);
+        }
+
+        /* 画像グリッド */
+        .encyclopedia-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .image-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 0.6rem;
+            aspect-ratio: 1 / 1.25;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+                        box-shadow 0.3s ease,
+                        border-color 0.3s ease;
+        }
+
+        .image-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.06);
+            border-color: var(--accent-blue);
+        }
+
+        .card-img-wrapper {
+            width: 100%;
+            aspect-ratio: 1;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #f1f5f9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .card-img-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .image-card:hover .card-img-wrapper img {
+            transform: scale(1.05);
+        }
+
+        /* 未正解状態 */
+        .locked-card {
+            cursor: not-allowed;
+        }
+
+        .locked-card:hover {
+            transform: none;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+            border-color: var(--border);
+        }
+
+        .locked-placeholder {
+            font-size: 2.2rem;
+            color: #94a3b8;
+            font-weight: 800;
+            font-family: 'Outfit', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
+        }
+
+        .card-info-badge {
+            font-size: 0.75rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            font-weight: 700;
+            margin-top: 0.4rem;
+            text-align: center;
+            width: 100%;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .badge-locked {
+            background: #f1f5f9;
+            color: #94a3b8;
+            border: 1px dashed #cbd5e1;
+        }
+
+        .badge-unlocked {
+            background: #e0f2fe;
+            color: #0369a1;
+            border: 1px solid #bae6fd;
+        }
+
+        .badge-perfect {
+            background: #dcfce7;
+            color: #15803d;
+            border: 1px solid #bbf7d0;
+        }
+
+        /* モーダル表示 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-card {
+            background: white;
+            border-radius: 24px;
+            width: 90%;
+            max-width: 440px;
+            padding: 1.8rem;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+            position: relative;
+            transform: scale(0.9);
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-overlay.active .modal-card {
+            transform: scale(1);
+        }
+
+        .modal-close-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: #f1f5f9;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: #64748b;
+            transition: all 0.2s;
+        }
+
+        .modal-close-btn:hover {
+            background: #e2e8f0;
+            color: #334155;
+        }
+
+        .modal-img-wrapper {
+            width: 100%;
+            aspect-ratio: 1.2 / 1;
+            border-radius: 16px;
+            overflow: hidden;
+            background: #f1f5f9;
+            margin-bottom: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-img-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .modal-readings-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .modal-readings-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+            margin-bottom: 1rem;
+            padding: 0;
+        }
+
+        .reading-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            border-radius: 12px;
+            background: #f8fafc;
+            border: 1px solid #f1f5f9;
+        }
+
+        .reading-item.unlocked {
+            background: #f0fdf4;
+            border-color: #dcfce7;
+        }
+
+        .reading-item.locked {
+            background: #f1f5f9;
+            color: #94a3b8;
+            border-style: dashed;
+        }
+
+        .reading-name {
+            font-weight: 700;
+            font-size: 1.05rem;
+        }
+
+        .reading-badge {
+            font-size: 0.75rem;
+            padding: 0.15rem 0.5rem;
+            border-radius: 10px;
+            font-weight: 700;
+        }
+
+        .reading-badge.unlocked {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .reading-badge.locked {
+            background: #e2e8f0;
+            color: #64748b;
+        }
+    </style>
+</head>
+<body>
+    <div id="app-container" class="app-container">
+        <!-- 背景の動的な光の装飾 -->
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        
+        <header class="app-header">
+            <div class="header-logo">
+                <img src="{% static 'img/sihankun_100t.png' %}" alt="しりとり師範くんロゴ" class="logo-icon-img">
+                <div class="logo-text-group">
+                    <h1>しりとり図鑑</h1>
+                    <div class="user-status">
+                        {% if user.is_authenticated %}
+                            <span class="user-name"><i class="fa-solid fa-user"></i> {% if user.profile and user.profile.nickname %}{{ user.profile.nickname }}{% else %}{{ user.username }}{% endif %}さん</span>
+                            <span class="status-sep">|</span>
+                        {% endif %}
+                        <a href="{% url 'shiritori_game:game_index' %}" class="auth-link"><i class="fa-solid fa-gamepad"></i> しりとりで遊ぶ</a>
+                        <span class="status-sep">|</span>
+                        <a href="{% url 'landing' %}" class="auth-link"><i class="fa-solid fa-house"></i> トップに戻る</a>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="encyclopedia-container">
+            <!-- 進捗ステータスバナー -->
+            <div class="completion-banner">
+                <div class="completion-info">
+                    <div class="completion-title">
+                        <i class="fa-solid fa-trophy" style="color: #f59f00;"></i>
+                        <span>しりとり図鑑の進捗状況</span>
+                    </div>
+                    <div class="completion-bar-outer">
+                        <div class="completion-bar-inner" id="comp-bar-inner" style="width: {{ completion_rate }}%;"></div>
+                    </div>
+                </div>
+                <div class="completion-stats">
+                    <div class="completion-rate-num">{{ completion_rate }}%</div>
+                    <div class="completion-ratio">
+                        正解した画像: <strong>{{ completed_images_count }}</strong> / {{ total_images_count }} 枚
+                    </div>
+                </div>
+            </div>
+
+            <!-- ゲスト向け案内バナー -->
+            {% if is_guest_or_anon %}
+            <div class="promo-banner">
+                <div class="promo-text">
+                    <i class="fa-solid fa-circle-info"></i>
+                    <span>ログインすると、正解した画像が図鑑にコレクションされ、自分だけの図鑑を作れます！</span>
+                </div>
+                <div class="promo-actions">
+                    <a href="{% url 'shiritori_game:login' %}" class="btn-promo-login">ログイン</a>
+                    <a href="{% url 'shiritori_game:register' %}" class="btn-promo-register">アカウント作成</a>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- 画像グリッド -->
+            <div class="encyclopedia-grid">
+                {% for image in images %}
+                    {% if image.id in completed_image_ids %}
+                        <!-- クリア済みカード -->
+                        <div class="image-card" data-image-id="{{ image.id }}" data-image-url="{{ image.image_url }}" data-remarks="{{ image.remarks|default:'' }}">
+                            <div class="card-img-wrapper">
+                                <img src="{{ image.image_url }}" alt="図鑑画像 {{ image.id }}">
+                            </div>
+                            <!-- 正解読み方数バッジ -->
+                            <div class="card-info-badge badge-unlocked" id="badge-{{ image.id }}">
+                                読み方:
+                                <span class="unlocked-readings-count">?</span> / {{ image.readings.all|length }}
+                            </div>
+                            
+                            <!-- 読み方の詳細データをJS送信用に保持 -->
+                            <script type="application/json" class="reading-data-json" id="readings-data-{{ image.id }}">
+                                [
+                                    {% for r in image.readings.all %}
+                                        {
+                                            "reading": "{{ r.reading }}",
+                                            "display_name": "{{ r.display_name|default:'' }}",
+                                            "is_unlocked": {% if r.id in completed_readings_ids %}true{% else %}false{% endif %}
+                                        }{% if not forloop.last %},{% endif %}
+                                    {% endfor %}
+                                ]
+                            </script>
+                        </div>
+                    {% else %}
+                        <!-- 未クリアカード（guestや未ログインでクリアしてない場合含む） -->
+                        <div class="image-card locked-card">
+                            <div class="card-img-wrapper">
+                                <div class="locked-placeholder">？</div>
+                            </div>
+                            <div class="card-info-badge badge-locked">
+                                未発見
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </main>
+
+        <footer class="app-footer">
+            <p>&copy; 2026 しりとり師範くん 図鑑</p>
+        </footer>
+    </div>
+
+    <!-- 詳細モーダル -->
+    <div class="modal-overlay" id="detail-modal-overlay">
+        <div class="modal-card">
+            <button class="modal-close-btn" id="modal-close-btn"><i class="fa-solid fa-xmark"></i></button>
+            <div class="modal-img-wrapper">
+                <img src="" id="modal-image" alt="図鑑詳細">
+            </div>
+            <div class="modal-readings-title">
+                <i class="fa-solid fa-tags" style="color: var(--accent-purple);"></i>
+                <span>登録されている読み方</span>
+            </div>
+            <ul class="modal-readings-list" id="modal-readings-list">
+                <!-- JSで動的に追加されます -->
+            </ul>
+            <div id="modal-remarks" style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 1rem; border-top: 1px solid #f1f5f9; padding-top: 0.8rem; white-space: pre-wrap; display: none;">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const cards = document.querySelectorAll('.image-card:not(.locked-card)');
+            const modalOverlay = document.getElementById('detail-modal-overlay');
+            const modalImage = document.getElementById('modal-image');
+            const modalReadingsList = document.getElementById('modal-readings-list');
+            const modalRemarks = document.getElementById('modal-remarks');
+            const modalCloseBtn = document.getElementById('modal-close-btn');
+
+            // 各カードのクリアされた読み方数をバッジに反映
+            cards.forEach(card => {
+                const imgId = card.dataset.imageId;
+                const scriptEl = document.getElementById(`readings-data-${imgId}`);
+                if (scriptEl) {
+                    try {
+                        const readings = JSON.parse(scriptEl.textContent);
+                        const unlockedCount = readings.filter(r => r.is_unlocked).length;
+                        const totalCount = readings.length;
+                        const badge = document.getElementById(`badge-${imgId}`);
+                        const textSpan = badge.querySelector('.unlocked-readings-count');
+                        textSpan.textContent = unlockedCount;
+
+                        if (unlockedCount === totalCount) {
+                            badge.className = "card-info-badge badge-perfect";
+                            badge.innerHTML = `<i class="fa-solid fa-crown"></i> かんぺき！ (${unlockedCount}/${totalCount})`;
+                        }
+                    } catch (e) {
+                        console.error('Error parsing readings json', e);
+                    }
+                }
+            });
+
+            // カードクリックイベント
+            cards.forEach(card => {
+                card.addEventListener('click', () => {
+                    const imgId = card.dataset.imageId;
+                    const imgUrl = card.dataset.imageUrl;
+                    const remarks = card.dataset.remarks;
+                    const scriptEl = document.getElementById(`readings-data-${imgId}`);
+                    
+                    if (!scriptEl) return;
+
+                    try {
+                        const readings = JSON.parse(scriptEl.textContent);
+                        
+                        // モーダル内容セット
+                        modalImage.src = imgUrl;
+                        modalReadingsList.innerHTML = '';
+
+                        readings.forEach(r => {
+                            const li = document.createElement('li');
+                            const displayName = r.display_name || r.reading;
+                            
+                            if (r.is_unlocked) {
+                                li.className = 'reading-item unlocked';
+                                li.innerHTML = `
+                                    <span class="reading-name">${displayName} (${r.reading})</span>
+                                    <span class="reading-badge unlocked"><i class="fa-solid fa-circle-check"></i> 発見済み</span>
+                                `;
+                            } else {
+                                li.className = 'reading-item locked';
+                                li.innerHTML = `
+                                    <span class="reading-name" style="letter-spacing: 0.1em; color: #94a3b8; font-weight:normal;">？？？</span>
+                                    <span class="reading-badge locked"><i class="fa-solid fa-lock"></i> 未発見</span>
+                                `;
+                            }
+                            modalReadingsList.appendChild(li);
+                        });
+
+                        if (remarks && remarks.trim() !== '') {
+                            modalRemarks.textContent = remarks;
+                            modalRemarks.style.display = 'block';
+                        } else {
+                            modalRemarks.style.display = 'none';
+                        }
+
+                        // モーダル表示
+                        modalOverlay.classList.add('active');
+                    } catch (e) {
+                        console.error(e);
+                    }
+                });
+            });
+
+            // モーダルを閉じる
+            function closeModal() {
+                modalOverlay.classList.remove('active');
+            }
+
+            modalCloseBtn.addEventListener('click', closeModal);
+            modalOverlay.addEventListener('click', (e) => {
+                if (e.target === modalOverlay) {
+                    closeModal();
+                }
+            });
+            
+            // ESCキーで閉じる
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && modalOverlay.classList.contains('active')) {
+                    closeModal();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

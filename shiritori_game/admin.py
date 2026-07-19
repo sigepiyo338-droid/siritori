@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import User
 from django.utils.translation import gettext_lazy as _
-from .models import GameImage, ImageReading
+from .models import GameImage, ImageReading, UserReadingCompletion
 
 class ImageReadingInline(admin.TabularInline):
     model = ImageReading
@@ -27,9 +27,24 @@ class ImageReadingAdmin(admin.ModelAdmin):
     list_filter = ('created_at',)
     search_fields = ('reading', 'image__id')
 
+@admin.register(UserReadingCompletion)
+class UserReadingCompletionAdmin(admin.ModelAdmin):
+    list_display = ('id', 'user', 'reading_name', 'image_id', 'created_at')
+    list_filter = ('created_at', 'user')
+    search_fields = ('user__username', 'reading__reading', 'reading__image__id')
+
+    def reading_name(self, obj):
+        return obj.reading.reading
+    reading_name.short_description = '読み方'
+
+    def image_id(self, obj):
+        return obj.reading.image.id
+    image_id.short_description = '画像ID'
+
 # --- Userモデルのカスタマイズ ---
 # 「名 (first_name)」のラベルを「ニックネーム」に変更
 User._meta.get_field('first_name').verbose_name = 'ニックネーム'
+
 
 # デフォルトのUserAdminの登録を解除
 admin.site.unregister(User)

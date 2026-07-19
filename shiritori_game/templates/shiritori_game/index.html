@@ -24,7 +24,10 @@
     <script>
         window.SHIRITORI_USER_ID = "{{ user.id|default:'' }}";
         window.SHIRITORI_API_BASE = "{% url 'shiritori_game:image_list_api' %}";
+        window.SHIRITORI_RECORD_API = "{% url 'shiritori_game:record_reading_api' %}";
+        window.SHIRITORI_IS_GUEST = {% if user.username == 'guest' %}true{% else %}false{% endif %};
     </script>
+
 </head>
 <body>
     <div id="app-container" class="app-container">
@@ -41,9 +44,14 @@
                         {% if user.is_authenticated %}
                             <span class="user-name"><i class="fa-solid fa-user"></i> {% if user.profile and user.profile.nickname %}{{ user.profile.nickname }}{% else %}{{ user.username }}{% endif %}さん</span>
                             <span class="status-sep">|</span>
+                            <a href="{% url 'shiritori_game:encyclopedia' %}" class="auth-link"><i class="fa-solid fa-book"></i> しりとり図鑑</a>
+                            <span class="status-sep">|</span>
                             <a href="{% url 'shiritori_game:my_images' %}" class="auth-link"><i class="fa-solid fa-images"></i> 投稿画像一覧</a>
                             <span class="status-sep">|</span>
                             <a href="{% url 'shiritori_game:logout' %}" class="auth-link"><i class="fa-solid fa-right-from-bracket"></i> ログアウト</a>
+                            <span class="status-sep">|</span>
+                        {% else %}
+                            <a href="{% url 'shiritori_game:encyclopedia' %}" class="auth-link"><i class="fa-solid fa-book"></i> しりとり図鑑</a>
                             <span class="status-sep">|</span>
                         {% endif %}
                         <a href="{% url 'landing' %}" class="auth-link"><i class="fa-solid fa-house"></i> トップに戻る</a>
@@ -88,6 +96,7 @@
                 <p>画像をつなげてしりとりをするゲームです。つなぎ文字からはじまる画像を選んでね。</p>
                 <div class="menu-actions">
                     <button id="start-game-btn" class="btn btn-primary"><i class="fa-solid fa-play"></i> ゲームを開始</button>
+                    <a href="{% url 'shiritori_game:encyclopedia' %}" class="btn btn-secondary" style="background: #ecfdf5; color: #059669; border-color: #a7f3d0;"><i class="fa-solid fa-book"></i> しりとり図鑑</a>
                     <a href="{% url 'shiritori_game:game_settings' %}" class="btn btn-secondary" style="background: #e0f2fe; color: #0284c7; border-color: #bae6fd;"><i class="fa-solid fa-sliders"></i> 出題設定</a>
                     <a href="{% url 'shiritori_game:post_management' %}" class="btn btn-secondary" style="background: #f3e8ff; color: #9333ea; border-color: #e9d5ff;"><i class="fa-solid fa-folder-open"></i> 投稿管理</a>
                     <a href="https://sigepiyo338.pythonanywhere.com/media/sihankun-playguide.pdf" target="_blank" rel="noopener noreferrer" class="btn btn-secondary" style="margin-top: 0.5rem; background: #ffedd5; color: #ea580c; border-color: #fed7aa;"><i class="fa-regular fa-circle-question"></i> 遊び方ガイド</a>
@@ -204,7 +213,7 @@
         </section>
 
         <footer class="app-footer">
-            <p>&copy; 2026 しりとり師範くん <span id="app-version">v1.16.10</span> (<span id="last-updated">最終更新: 2026-07-13</span>).</p>
+            <p>&copy; 2026 しりとり師範くん <span id="app-version">v1.17.0</span> (<span id="last-updated">最終更新: 2026-07-19</span>).</p>
         </footer>
     </div>
 

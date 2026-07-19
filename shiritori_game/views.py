@@ -5,7 +5,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from django.db.models import Q
-from .models import GameImage, ImageReading
+from .models import GameImage, ImageReading, UserReadingCompletion
 from .forms import ImageUploadForm, UserRegistrationForm
 
 @login_required(login_url='shiritori_game:login')
@@ -287,6 +287,7 @@ def image_list_api(request):
                 'image_url': img.image_url,
                 'readings': [
                     {
+                        'id': r.id,
                         'reading': r.reading,
                         'display_name': r.display_name if r.display_name else ''
                     }
@@ -347,3 +348,72 @@ def account_settings(request):
         return redirect('shiritori_game:account_settings')
         
     return render(request, 'shiritori_game/account.html', {'profile': profile})
+
+
+from django.views.decorators.http import require_POST
+import json
+
+@require_POST
+def record_reading_api(request):
+    """
+    ユーザーがしりとりで正解した読み方を記録するAPI
+    """
+    if not request.user.is_authenticated or request.user.username == 'guest':
+        return JsonResponse({'status': 'ignored', 'message': '未ログインまたはゲストユーザーのため記録されません。'}, status=200)
+
+    try:
+        data = json.loads(request.body)
+        reading_id = data.get('reading_id')
+        if not reading_id:
+            return JsonResponse({'status': 'error', 'message': 'reading_id が必要です。'}, status=400)
+
+        reading = get_object_or_404(ImageReading, pk=reading_id)
+
+        # 承認済み画像に紐づく読み方のみ記録可能とする
+        if not reading.image.is_approved:
+            return JsonResponse({'status': 'error', 'message': '未承認の画像の読み方は記録できません。'}, status=400)
+
+        completion, created = UserReadingCompletion.objects.get_or_create(
+            user=request.user,
+            reading=reading
+        )
+        return JsonResponse({'status': 'success', 'created': created}, status=200)
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+
+def encyclopedia(request):
+    """
+    しりとり図鑑画面を表示するビュー
+    """
+    # 承認済みのすべての画像を取得（関連する読み方もプリフェッチ）
+    images = GameImage.objects.filter(is_approved=True).prefetch_related('readings').order_by('created_at')
+
+    completed_readings_ids = set()
+    completed_image_ids = set()
+
+    is_guest_or_anon = not request.user.is_authenticated or request.user.username == 'guest'
+
+    if not is_guest_or_anon:
+        completions = UserReadingCompletion.objects.filter(user=request.user).select_related('reading')
+        completed_readings_ids = {c.reading_id for c in completions}
+        completed_image_ids = {c.reading.image_id for c in completions}
+
+    total_images_count = images.count()
+    completed_images_count = len(completed_image_ids)
+    completion_rate = 0
+    if total_images_count > 0:
+        # 小数点第一位まで計算
+        completion_rate = round((completed_images_count / total_images_count) * 100, 1)
+
+    context = {
+        'images': images,
+        'completed_image_ids': list(completed_image_ids),
+        'completed_readings_ids': list(completed_readings_ids),
+        'completion_rate': completion_rate,
+        'total_images_count': total_images_count,
+        'completed_images_count': completed_images_count,
+        'is_guest_or_anon': is_guest_or_anon,
+    }
+    return render(request, 'shiritori_game/encyclopedia.html', context)
+
